@@ -1,70 +1,106 @@
-import { Link, useParams, useNavigate } from "react-router-dom";
-import { getProductBySlug } from "../data/products";
-import { useCartStore } from "../stores/cartStore";
 import { useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import SectionTitle from "../components/SectionTitle";
+import EmptyState from "../components/EmptyState";
+import { useProductStore } from "../stores/productStore";
+import { useCartStore } from "../stores/cartStore";
+import { eur } from "../lib/money";
 
 export default function ProductPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const add = useCartStore((s) => s.add);
 
-  const product = useMemo(() => getProductBySlug(slug), [slug]);
+  const add = useCartStore((s) => s.add);
   const [qty, setQty] = useState(1);
 
-  if (!product) {
+  const productsAll = useProductStore((s) => s.products);
+
+  const product = useMemo(() => {
+    return productsAll.find((p) => p.slug === slug) || null;
+  }, [productsAll, slug]);
+
+  if (!product || !product.active) {
     return (
-      <div className="card">
-        <h1 style={{ marginTop: 0 }}>Produit introuvable</h1>
-        <Link className="btn" to="/">Retour accueil</Link>
-      </div>
+      <EmptyState
+        title="Produit introuvable"
+        text="Ce produit n'existe pas ou n'est plus disponible."
+        action={
+          <Link className="btn" to="/catalog">
+            Retour catalogue
+          </Link>
+        }
+      />
     );
   }
 
   return (
     <div className="col">
-      <div className="card">
-        <div className="row wrap" style={{ justifyContent: "space-between", alignItems: "center" }}>
-          <h1 style={{ margin: 0 }}>{product.name}</h1>
-          <div className="muted">{product.price} €</div>
-        </div>
-        <p className="muted">{product.description}</p>
-      </div>
+      <SectionTitle
+        title={product.name}
+        subtitle={`${eur(product.price)} • ${
+          product.stockQty > 0 ? "En stock" : "Rupture"
+        }`}
+        right={
+          <Link className="btn" to={`/category/${product.category}`}>
+            Retour catégorie
+          </Link>
+        }
+      />
 
-      <div className="card">
-        <div className="row wrap">
+      <div className="row wrap">
+        <div className="glass card" style={{ flex: 1 }}>
           <img
-            src={product.images[0]}
+            src={product.images?.[0]}
             alt={product.name}
-            style={{ width: 420, maxWidth: "100%", height: 320, objectFit: "cover", borderRadius: 10, border: "1px solid var(--border)" }}
+            style={{
+              width: "100%",
+              height: 420,
+              objectFit: "cover",
+              borderRadius: 18,
+              border: "1px solid var(--border)",
+              background: "rgba(255,255,255,0.6)",
+            }}
           />
-          <div className="col" style={{ flex: 1 }}>
-            <label>
-              Quantité
-              <input
-                className="input"
-                type="number"
-                min="1"
-                value={qty}
-                onChange={(e) => setQty(Math.max(1, Number(e.target.value || 1)))}
-                style={{ marginTop: 6 }}
-              />
-            </label>
+        </div>
 
-            <div className="row wrap">
-              <button
-                className="btn primary"
-                disabled={!product.inStock}
-                onClick={() => {
-                  add(product.id, qty);
-                  navigate("/cart");
-                }}
-              >
-                Ajouter au panier
-              </button>
-              <Link className="btn" to={`/theme/${product.category}`}>Retour thème</Link>
-            </div>
+        <div className="glass card" style={{ width: 420, maxWidth: "100%" }}>
+          <div style={{ fontWeight: 900, fontSize: 18 }}>Détails</div>
+          <div className="muted" style={{ marginTop: 8 }}>
+            {product.description}
+          </div>
 
-            {!product.inStock && <div className="small">Rupture (V1).</div>}
+          <div style={{ marginTop: 14 }}>
+            <label>Quantité</label>
+            <input
+              className="input"
+              type="number"
+              min="1"
+              value={qty}
+              onChange={(e) => setQty(Math.max(1, Number(e.target.value || 1)))}
+            />
+          </div>
+
+          <div className="row wrap" style={{ marginTop: 14 }}>
+            <button
+              className="btn primary"
+              disabled={product.stockQty <= 0}
+              onClick={() => {
+                add(product.id, qty);
+                navigate("/cart");
+              }}
+            >
+              Ajouter au panier
+            </button>
+            <Link className="btn" to="/cart">
+              Voir panier
+            </Link>
+          </div>
+
+          <div className="hr" />
+
+          <div className="small">
+            Catégorie:{" "}
+            <Link to={`/category/${product.category}`}>{product.category}</Link>
           </div>
         </div>
       </div>

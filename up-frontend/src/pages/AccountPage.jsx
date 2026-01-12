@@ -1,92 +1,103 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import SectionTitle from "../components/SectionTitle";
+import EmptyState from "../components/EmptyState";
 import { useAuthStore } from "../stores/authStore";
 import { useOrderStore } from "../stores/orderStore";
+import { eur } from "../lib/money";
 
-export default function AccountPage() {
+const statusLabel = {
+  EN_PREPARATION: "En préparation",
+  EXPEDIEE: "Expédiée",
+  LIVREE: "Livrée",
+  ANNULEE: "Annulée",
+};
+
+export default function AccountPage(){
   const navigate = useNavigate();
   const location = useLocation();
 
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
-  const orders = useOrderStore((s) => s.orders);
+  const listForEmail = useOrderStore((s) => s.listForEmail);
 
   const [tab, setTab] = useState("orders");
+  const createdOrderId = location.state?.createdOrderId;
 
   useEffect(() => {
     if (!user) navigate("/login");
   }, [user]);
 
-  const createdOrderId = location.state?.createdOrderId;
-
-  const createdOrder = useMemo(() => {
-    if (!createdOrderId) return null;
-    return orders.find((o) => o.id === createdOrderId) || null;
-  }, [createdOrderId, orders]);
+  const orders = useMemo(() => listForEmail(user?.email), [user?.email]);
 
   if (!user) return null;
 
   return (
-    <div className="two-col">
-      <aside className="card">
-        <div style={{ fontWeight: 900, fontSize: 18 }}>Compte</div>
-        <div className="small" style={{ marginTop: 6 }}>{user.email}</div>
+    <div className="col">
+      <SectionTitle
+        title="Mon compte"
+        subtitle={user.email + (user.role === "admin" ? " • admin" : "")}
+        right={
+          <div className="row wrap">
+            {user.role === "admin" ? <Link className="btn" to="/admin">Admin</Link> : null}
+            <button className="btn" onClick={() => { logout(); navigate("/"); }}>Déconnexion</button>
+          </div>
+        }
+      />
 
-        <div className="col" style={{ marginTop: 12 }}>
-          <button className={"btn " + (tab === "orders" ? "primary" : "")} onClick={() => setTab("orders")}>
-            Commandes
-          </button>
-          <button className={"btn " + (tab === "profile" ? "primary" : "")} onClick={() => setTab("profile")}>
-            Profil
-          </button>
-          <button className="btn danger" onClick={() => { logout(); navigate("/"); }}>
-            Déconnexion
-          </button>
+      <div className="glass card">
+        <div className="row wrap">
+          <button className={"btn " + (tab === "orders" ? "primary" : "")} onClick={() => setTab("orders")}>Commandes</button>
+          <button className={"btn " + (tab === "profile" ? "primary" : "")} onClick={() => setTab("profile")}>Profil</button>
         </div>
 
-        <hr />
-        <div className="small">Retour : <Link to="/">Accueil</Link></div>
-      </aside>
-
-      <section className="card">
-        {createdOrder && (
-          <div className="card" style={{ borderStyle: "dashed", marginBottom: 12 }}>
-            <div style={{ fontWeight: 900 }}>Commande enregistrée</div>
-            <div className="small">ID : {createdOrder.id}</div>
-          </div>
-        )}
-
         {tab === "profile" ? (
-          <>
-            <h2 style={{ marginTop: 0 }}>Profil</h2>
+          <div className="col" style={{ marginTop: 12 }}>
             <div className="kpi"><span className="muted">Email</span><strong>{user.email}</strong></div>
-          </>
+            <div className="small">Profil minimal. Le backend ajoutera plus tard des champs.</div>
+          </div>
         ) : (
-          <>
-            <h2 style={{ marginTop: 0 }}>Commandes</h2>
+          <div className="col" style={{ marginTop: 12 }}>
+            {createdOrderId ? (
+              <div className="glass card" style={{ borderStyle: "dashed" }}>
+                <div style={{ fontWeight: 900 }}>Commande enregistrée</div>
+                <div className="small">ID : {createdOrderId}</div>
+              </div>
+            ) : null}
+
             {orders.length === 0 ? (
-              <div className="muted">Aucune commande. <Link to="/">Retour boutique</Link></div>
+              <EmptyState
+                title="Aucune commande"
+                text="Fais une commande via le checkout."
+                action={<Link className="btn primary" to="/catalog">Aller au catalogue</Link>}
+              />
             ) : (
               <div className="col">
                 {orders.map((o) => (
-                  <div key={o.id} className="card" style={{ borderRadius: 12 }}>
-                    <div className="row wrap" style={{ justifyContent: "space-between", alignItems: "center" }}>
+                  <div key={o.id} className="glass card">
+                    <div className="row wrap" style={{ justifyContent:"space-between", alignItems:"center" }}>
                       <div>
                         <div style={{ fontWeight: 900 }}>{o.id}</div>
                         <div className="small">{new Date(o.createdAt).toLocaleString()}</div>
                       </div>
-                      <div style={{ textAlign: "right" }}>
-                        <div><strong>{o.total} €</strong></div>
-                        <div className="small">{o.status}</div>
+                      <div style={{ textAlign:"right" }}>
+                        <div style={{ fontWeight: 900 }}>{eur(o.total)}</div>
+                        <div className="small">{statusLabel[o.status] || o.status}</div>
                       </div>
+                    </div>
+
+                    <div className="hr" />
+
+                    <div className="small">
+                      {o.items?.length || 0} article(s) • Promo: {o.promoCode || "—"}
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </>
+          </div>
         )}
-      </section>
+      </div>
     </div>
   );
 }
