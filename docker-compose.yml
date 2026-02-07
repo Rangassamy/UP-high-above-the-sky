@@ -1,0 +1,15 @@
+services:
+  backend:
+    build:
+      context: backend
+    ports:
+      - "8000:8000"
+    network_mode: host
+    volumes:
+      - "./storage:/app/storage"
+  frontend:
+    build:
+      context: up-frontend
+    ports:
+      - "5173:5173"
+    network_mode: host

@@ -1,3 +1,3 @@
 import sqlite3
 
-connection = sqlite3.connect("data.db")
+connection = sqlite3.connect("storage/data.db")
