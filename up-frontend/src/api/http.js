@@ -3,7 +3,10 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const AUTH_MODE = (import.meta.env.VITE_AUTH_MODE || "both").toLowerCase();
 
 export function setToken(t) {
-  if (!t) return;
+  if (!t) {
+    localStorage.removeItem("up_token");
+    return;
+  }
   localStorage.setItem("up_token", t);
 }
 
@@ -39,11 +42,23 @@ export async function api(path, { method = "GET", body, auth = true } = {}) {
     body: body ? JSON.stringify(body) : undefined,
   });
 
-  const data = await res.json().catch(() => null);
+  const raw = await res.text().catch(() => "");
+  const data = raw
+    ? (() => {
+        try {
+          return JSON.parse(raw);
+        } catch {
+          return null;
+        }
+      })()
+    : null;
+
   if (!res.ok) {
-    const msg = data?.detail || data?.message || `HTTP ${res.status}`;
+    const msg = data?.detail || data?.message || raw || `HTTP ${res.status}`;
     throw new Error(msg);
   }
+
+  // If response is empty (e.g. 204), return null.
   return data;
 }
 

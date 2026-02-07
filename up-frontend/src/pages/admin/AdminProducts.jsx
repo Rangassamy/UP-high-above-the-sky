@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useProductStore } from "../../stores/productStore";
 import { makeSlug } from "../../lib/slug";
 
@@ -11,19 +11,20 @@ const blank = {
   description: "",
   images: ["https://via.placeholder.com/1200x800?text=UP+Product"],
   stockQty: 0,
-  active: true,
   featured: false,
 };
 
 export default function AdminProducts() {
   const products = useProductStore((s) => s.products);
-  const upsert = useProductStore((s) => s.upsert);
-  const remove = useProductStore((s) => s.remove);
-  const toggleActive = useProductStore((s) => s.toggleActive);
-  const setFeatured = useProductStore((s) => s.setFeatured);
-  const adjustStock = useProductStore((s) => s.adjustStock);
+  const fetchProducts = useProductStore((s) => s.fetchProducts);
+  const saveProduct = useProductStore((s) => s.saveProduct);
+  const deleteProduct = useProductStore((s) => s.deleteProduct);
 
   const [editing, setEditing] = useState(blank);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const ordered = useMemo(() => {
     const p = [...products];
@@ -44,7 +45,6 @@ export default function AdminProducts() {
                 <th>Cat</th>
                 <th>Prix</th>
                 <th>Stock</th>
-                <th>Actif</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -63,11 +63,13 @@ export default function AdminProducts() {
                       style={{ width: 90 }}
                       type="number"
                       min="0"
-                      value={p.stockQty}
-                      onChange={(e) => adjustStock(p.id, e.target.value)}
+                      defaultValue={p.stockQty}
+                      onBlur={async (e) => {
+                        const v = Number(e.target.value || 0);
+                        await saveProduct({ ...p, stockQty: v });
+                      }}
                     />
                   </td>
-                  <td>{p.active ? "Oui" : "Non"}</td>
                   <td>
                     <div className="row wrap">
                       <button className="btn" onClick={() => setEditing(p)}>
@@ -75,16 +77,17 @@ export default function AdminProducts() {
                       </button>
                       <button
                         className="btn"
-                        onClick={() => toggleActive(p.id)}
+                        onClick={async () => {
+                          await saveProduct({ ...p, featured: !p.featured });
+                        }}
                       >
-                        {p.active ? "Désactiver" : "Activer"}
-                      </button>
-                      <button className="btn" onClick={() => setFeatured(p.id)}>
                         {p.featured ? "Vedette" : "Mettre vedette"}
                       </button>
                       <button
                         className="btn danger"
-                        onClick={() => remove(p.id)}
+                        onClick={async () => {
+                          await deleteProduct(p.id);
+                        }}
                       >
                         Supprimer
                       </button>
@@ -94,7 +97,7 @@ export default function AdminProducts() {
               ))}
               {ordered.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="muted">
+                  <td colSpan="5" className="muted">
                     Aucun produit.
                   </td>
                 </tr>
@@ -113,13 +116,13 @@ export default function AdminProducts() {
             </button>
             <button
               className="btn primary"
-              onClick={() => {
+              onClick={async () => {
                 const next = { ...editing };
                 if (!next.slug) next.slug = makeSlug(next.name);
                 next.images = [
                   String(next.images?.[0] || "").trim() || blank.images[0],
                 ];
-                upsert(next);
+                await saveProduct(next);
                 setEditing(blank);
               }}
             >
@@ -198,16 +201,6 @@ export default function AdminProducts() {
           </div>
 
           <div className="row wrap" style={{ alignItems: "center" }}>
-            <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <input
-                type="checkbox"
-                checked={!!editing.active}
-                onChange={(e) =>
-                  setEditing({ ...editing, active: e.target.checked })
-                }
-              />
-              Actif
-            </label>
             <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <input
                 type="checkbox"

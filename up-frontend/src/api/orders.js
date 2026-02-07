@@ -1,13 +1,12 @@
 import { api } from "./http";
 
 export const OrdersAPI = {
-  create: (payload) => api("/orders", { method: "POST", body: payload }),
-  mine: () => api("/orders/me"),
+  // Client: crée une commande depuis le panier serveur
+  buy: (promoId) => {
+    const qs = promoId ? `?promo_id=${encodeURIComponent(promoId)}` : "";
+    return api(`/buy${qs}`, { method: "POST" });
+  },
 
-  list: () => api("/orders"),
-  setStatus: (id, status) =>
-    api(`/orders/${encodeURIComponent(id)}/status`, {
-      method: "PATCH",
-      body: { status },
-    }),
+  mine: () => api("/orders/me"),
+  list: () => api("/orders"), // admin
 };

@@ -2,6 +2,16 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { OrdersAPI } from "../api/orders";
 
+function mapOrder(o) {
+  if (!o) return null;
+  return {
+    id: String(o.id ?? ""),
+    createdAt: o.created_date ?? o.createdAt ?? new Date().toISOString(),
+    total: Number(o.total_price ?? o.total ?? 0),
+    status: o.status ?? "EN_PREPARATION",
+  };
+}
+
 export const useOrderStore = create(
   persist(
     (set, get) => ({
@@ -9,39 +19,30 @@ export const useOrderStore = create(
       loading: false,
       error: "",
 
-      // Local fallback (works without backend)
-      createOrderLocal(payload){
-        const id = "ORD-" + Math.random().toString(16).slice(2, 10).toUpperCase();
-        const createdAt = new Date().toISOString();
-        const status = "EN_PREPARATION";
-        const order = { id, createdAt, status, ...payload };
-        set((s) => ({ orders: [order, ...s.orders] }));
-        return order;
-      },
-
-      // Preferred: create on server, fallback to local if missing
-      async createOrder(payload){
+      async createOrder({ promoId } = {}) {
         set({ loading: true, error: "" });
         try {
-          const created = await OrdersAPI.create(payload);
-          const order = created?.content || created;
-          if (order) set((s) => ({ orders: [order, ...s.orders], loading: false }));
+          const res = await OrdersAPI.buy(promoId);
+          const order = mapOrder(res?.order || res?.content || res);
+          if (order)
+            set((s) => ({ orders: [order, ...s.orders], loading: false }));
           else set({ loading: false });
           return order;
         } catch (e) {
-          // backend not ready -> local simulation
-          const order = get().createOrderLocal(payload);
           set({ loading: false, error: e.message || "Erreur" });
-          return order;
+          return null;
         }
       },
 
-      async fetchMyOrders(){
+      async fetchMyOrders() {
         set({ loading: true, error: "" });
         try {
           const raw = await OrdersAPI.mine();
-          const list = Array.isArray(raw) ? raw : raw?.content || raw?.items || [];
-          set({ orders: list, loading: false });
+          const list = Array.isArray(raw)
+            ? raw
+            : raw?.content || raw?.items || [];
+          const mapped = list.map(mapOrder).filter(Boolean);
+          set({ orders: mapped, loading: false });
           return { ok: true };
         } catch (e) {
           set({ loading: false, error: e.message || "Erreur" });
@@ -49,12 +50,15 @@ export const useOrderStore = create(
         }
       },
 
-      async fetchAllOrders(){
+      async fetchAllOrders() {
         set({ loading: true, error: "" });
         try {
           const raw = await OrdersAPI.list();
-          const list = Array.isArray(raw) ? raw : raw?.content || raw?.items || [];
-          set({ orders: list, loading: false });
+          const list = Array.isArray(raw)
+            ? raw
+            : raw?.content || raw?.items || [];
+          const mapped = list.map(mapOrder).filter(Boolean);
+          set({ orders: mapped, loading: false });
           return { ok: true };
         } catch (e) {
           set({ loading: false, error: e.message || "Erreur" });
@@ -62,33 +66,10 @@ export const useOrderStore = create(
         }
       },
 
-      listForEmail(email){
-        const e = String(email || "").trim().toLowerCase();
-        return get().orders.filter(o => String(o.email || "").toLowerCase() === e);
-      },
-
-      adminList(){
+      adminList() {
         return get().orders;
       },
-
-      setStatus(id, status){
-        set((s) => ({ orders: s.orders.map(o => o.id === id ? { ...o, status } : o) }));
-      },
-
-      async setStatusRemote(id, status){
-        set({ loading: true, error: "" });
-        try {
-          await OrdersAPI.setStatus(id, status);
-          set({ loading: false });
-          // optimistic local update
-          get().setStatus(id, status);
-          return { ok: true };
-        } catch (e) {
-          set({ loading: false, error: e.message || "Erreur" });
-          return { ok: false, error: e.message };
-        }
-      },
     }),
-    { name: "up_orders_full" }
-  )
+    { name: "up_orders_full" },
+  ),
 );
