@@ -10,6 +10,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./src /app/src
 
+RUN mkdir -p /app/storage
+
 COPY . /app
 
 CMD ["fastapi", "run", "src/main.py"]
