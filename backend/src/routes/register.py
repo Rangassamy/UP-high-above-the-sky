@@ -22,7 +22,7 @@ async def register(form: RegisterForm, response: Response):
         raise HTTPException(status_code=400, detail="Username alreay exist")
     users.create_user(form.username, form.email, form.password)
     user = users.get_user_by_name(form.username)
-    token = security.create_token({"sub": user.id})
+    token = security.create_token({"sub": str(user.id)})
     res_token = security.TokenResponse(access_token=token, token_type="bearer")
-    response.set_cookie("access_token", token)
+    response.set_cookie("access_token", token, httponly=True, samesite="lax")
     return res_token

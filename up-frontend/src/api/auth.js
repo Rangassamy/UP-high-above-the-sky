@@ -27,7 +27,11 @@ export const AuthAPI = {
   },
 
   logout() {
-    clearToken();
-    return Promise.resolve();
+    return api("/logout", {
+      method: "POST",
+      auth: false,
+    })
+      .catch(() => null)
+      .finally(() => clearToken());
   },
 };

@@ -32,7 +32,7 @@ def create(promo_code: PromoCode):
 def get(id: str) -> Optional[PromoCode]:
     cur = connection.cursor()
     cur.execute("SELECT * FROM promo_codes WHERE id = ?;", (id,))
-    row = cur.fetchall()
+    row = cur.fetchone()
     if row:
         return PromoCode(
             id=row[0], code=row[1], code_type=row[2], value=row[3], enable=row[4]

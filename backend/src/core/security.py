@@ -1,6 +1,4 @@
-from typing import Optional
 from fastapi import HTTPException, status
-from pwdlib import PasswordHash
 from datetime import datetime, timedelta, timezone
 import jwt
 from pydantic import BaseModel
@@ -17,8 +15,6 @@ class TokenResponse(BaseModel):
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
 
-password_hash = PasswordHash.recommended()
-
 
 def create_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
@@ -31,16 +27,28 @@ def create_token(data: dict, expires_delta: timedelta | None = None):
     return token
 
 
+def normalize_token(token: str | None) -> str | None:
+    if not token:
+        return None
+    if token.lower().startswith("bearer "):
+        return token[7:]
+    return token
+
+
 async def get_current_user(token: str | None) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    token = normalize_token(token)
     if not token:
         raise credentials_exception
-    payload = jwt.decode(token, SECRET_KEY, ALGORITHM)
-    user_id = payload.get("sub")
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+    except jwt.PyJWTError as exc:
+        raise credentials_exception from exc
     if user_id is None:
         raise credentials_exception
     user = get_user(user_id)

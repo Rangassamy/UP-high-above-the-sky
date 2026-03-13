@@ -1,10 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import SectionTitle from "../components/SectionTitle";
 import EmptyState from "../components/EmptyState";
 import { useCartStore } from "../stores/cartStore";
 import { useProductStore } from "../stores/productStore";
-import { usePromoStore } from "../stores/promoStore";
 import { useOrderStore } from "../stores/orderStore";
 import { useAuthStore } from "../stores/authStore";
 import { eur } from "../lib/money";
@@ -24,13 +23,13 @@ export default function CheckoutPage() {
 
   const items = useCartStore((s) => s.items);
   const promoCode = useCartStore((s) => s.promoCode);
-  const clear = useCartStore((s) => s.clear);
+  const setPromoCode = useCartStore((s) => s.setPromoCode);
   const syncFromServer = useCartStore((s) => s.syncFromServer);
 
   const getById = useProductStore((s) => s.getById);
-  const findActivePromo = usePromoStore((s) => s.findActive);
-
   const createOrder = useOrderStore((s) => s.createOrder);
+  const orderLoading = useOrderStore((s) => s.loading);
+  const orderError = useOrderStore((s) => s.error);
 
   const lines = items
     .map((it) => {
@@ -42,24 +41,80 @@ export default function CheckoutPage() {
 
   const subtotal = lines.reduce((s, l) => s + l.lineTotal, 0);
 
-  const promo = findActivePromo(promoCode);
+  const normalizedPromoCode = String(promoCode || "").trim();
+  const [promoState, setPromoState] = useState({
+    code: "",
+    promo: null,
+    message: "",
+  });
+  const promo =
+    promoState.code === normalizedPromoCode ? promoState.promo : null;
+  const promoMessage =
+    promoState.code === normalizedPromoCode ? promoState.message : "";
   const discount = computeDiscount(subtotal, promo);
   const total = Math.max(0, subtotal - discount);
 
   const [form, setForm] = useState({
-    name: "",
+    name: user?.username || "",
     email: user?.email || "",
     address1: "",
     city: "",
     zip: "",
   });
 
-  const canPay = useMemo(() => {
-    if (lines.length === 0) return false;
-    if (!form.name || !form.email || !form.address1 || !form.city || !form.zip)
-      return false;
-    return true;
-  }, [lines.length, form]);
+  useEffect(() => {
+    let cancelled = false;
+    if (!normalizedPromoCode) return () => {};
+
+    PromosAPI.validate(normalizedPromoCode)
+      .then((res) => {
+        if (cancelled) return;
+        if (res?.success && res?.content?.enable) {
+          setPromoState({
+            code: normalizedPromoCode,
+            promo: res.content,
+            message: `Code ${res.content.code} applique.`,
+          });
+          return;
+        }
+        setPromoState({
+          code: normalizedPromoCode,
+          promo: null,
+          message: "Code promo invalide ou desactive.",
+        });
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setPromoState({
+          code: normalizedPromoCode,
+          promo: null,
+          message: "Impossible de verifier le code promo.",
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [normalizedPromoCode]);
+
+  const canPay = Boolean(
+    lines.length > 0 &&
+      form.name &&
+      form.email &&
+      form.address1 &&
+      form.city &&
+      form.zip,
+  );
+
+  if (!user) {
+    return (
+      <EmptyState
+        title="Connexion requise"
+        text="Connecte-toi pour finaliser ta commande."
+        action={<Link className="btn primary" to="/login">Aller au login</Link>}
+      />
+    );
+  }
 
   if (lines.length === 0) {
     return (
@@ -168,7 +223,7 @@ export default function CheckoutPage() {
             </div>
             <div className="kpi">
               <span className="muted">Code promo</span>
-              <strong>{promo ? promo.code : "—"}</strong>
+              <strong>{promo ? promo.code : promoCode ? "Invalide" : "—"}</strong>
             </div>
             <div className="kpi">
               <span className="muted">Réduction</span>
@@ -179,39 +234,41 @@ export default function CheckoutPage() {
               <strong>{eur(total)}</strong>
             </div>
 
+            {promoMessage ? <div className="small">{promoMessage}</div> : null}
+            {orderError ? (
+              <div
+                className="glass card"
+                style={{ borderColor: "rgba(239,68,68,0.35)", color: "#991b1b" }}
+              >
+                {orderError}
+              </div>
+            ) : null}
+
             <button
               className="btn primary"
-              disabled={!canPay}
+              disabled={!canPay || orderLoading}
               onClick={async () => {
-                // Backend expects promo_id (not promo code). Validate code to get its id.
-                let promoId = null;
-                const code = String(promoCode || "").trim();
-
-                if (code) {
-                  try {
-                    const vr = await PromosAPI.validate(code);
-                    if (vr?.success && vr?.content?.enable) {
-                      promoId = vr.content.id;
-                    }
-                  } catch {
-                    // Ignore promo validation errors here; backend will still create the order without promo.
-                  }
-                }
-
-                const order = await createOrder({ promoId });
+                const order = await createOrder({
+                  promoId: promo?.id || null,
+                  payload: {
+                    name: form.name,
+                    email: form.email,
+                    address1: form.address1,
+                    city: form.city,
+                    zip: form.zip,
+                  },
+                });
 
                 // Backend clears the server cart on /buy, so resync.
                 await syncFromServer();
 
-                // Also clear local UI state (promo, etc.)
-                clear();
-
                 if (order?.id) {
+                  setPromoCode("");
                   navigate("/account", { state: { createdOrderId: order.id } });
                 }
               }}
             >
-              Payer
+              {orderLoading ? "Paiement..." : "Payer"}
             </button>
 
             <div className="small">

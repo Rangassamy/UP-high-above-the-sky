@@ -1,11 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { SEED_PROMOS } from "../data/seed";
 import { PromosAPI } from "../api/promos";
-
-function seed() {
-  return SEED_PROMOS.map((p) => ({ ...p, code: String(p.code).toUpperCase() }));
-}
 
 function mapPromo(p) {
   if (!p) return null;
@@ -22,7 +17,7 @@ function mapPromo(p) {
 export const usePromoStore = create(
   persist(
     (set, get) => ({
-      promos: seed(),
+      promos: [],
       lastValidate: null,
       validateError: "",
       loading: false,
@@ -104,6 +99,6 @@ export const usePromoStore = create(
         }
       },
     }),
-    { name: "up_promos_full" },
+    { name: "up_promos_full_v2" },
   ),
 );

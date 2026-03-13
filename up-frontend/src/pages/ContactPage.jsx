@@ -1,9 +1,12 @@
 import { useState } from "react";
 import SectionTitle from "../components/SectionTitle";
+import { ContactAPI } from "../api/contact";
 
 export default function ContactPage(){
   const [form, setForm] = useState({ name:"", email:"", subject:"", message:"" });
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+  const [sending, setSending] = useState(false);
 
   return (
     <div className="col" style={{ maxWidth: 760 }}>
@@ -14,7 +17,19 @@ export default function ContactPage(){
 
       <form
         className="glass card col"
-        onSubmit={(e) => { e.preventDefault(); setSent(true); }}
+        onSubmit={async (e) => {
+          e.preventDefault();
+          setError("");
+          setSending(true);
+          try {
+            await ContactAPI.send(form);
+            setSent(true);
+          } catch (err) {
+            setError(err.message || "Erreur d'envoi");
+          } finally {
+            setSending(false);
+          }
+        }}
       >
         <div className="row wrap">
           <div style={{ flex: 1 }}>
@@ -37,11 +52,19 @@ export default function ContactPage(){
           <textarea rows="6" className="input" value={form.message} onChange={(e)=>setForm({ ...form, message: e.target.value })} />
         </div>
 
-        <button className="btn primary" type="submit">Envoyer</button>
+        <button className="btn primary" type="submit" disabled={sending}>
+          {sending ? "Envoi..." : "Envoyer"}
+        </button>
+
+        {error ? (
+          <div className="glass card" style={{ borderColor: "rgba(239,68,68,0.35)", color:"#991b1b" }}>
+            {error}
+          </div>
+        ) : null}
 
         {sent ? (
           <div className="glass card" style={{ borderColor: "rgba(34,197,94,0.35)", color:"#166534" }}>
-            Message envoyé (simulation).
+            Message envoyé.
           </div>
         ) : null}
 

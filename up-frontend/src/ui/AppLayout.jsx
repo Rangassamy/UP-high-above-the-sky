@@ -13,32 +13,21 @@ export default function AppLayout() {
   const logout = useAuthStore((s) => s.logout);
   const fetchProducts = useProductStore((s) => s.fetchProducts);
   const productsHydrated = useProductStore((s) => s.hydrated);
-  const cartMode = useCartStore((s) => s.mode);
-  const setMode = useCartStore((s) => s.setMode);
   const syncFromServer = useCartStore((s) => s.syncFromServer);
   const token = useAuthStore((s) => s.token);
   const fetchMe = useAuthStore((s) => s.fetchMe);
 
   useEffect(() => {
-    // Load products once at app start (remote-first, fallback to seed).
     if (!productsHydrated) fetchProducts();
   }, [fetchProducts, productsHydrated]);
 
   useEffect(() => {
-    // If backend supports /me, load full user profile.
-    // Works for bearer tokens and for cookie sessions.
     fetchMe();
   }, [token, fetchMe]);
 
   useEffect(() => {
-    // Logged in => server cart. Logged out => local cart.
-    if (user) setMode("server");
-    else setMode("local");
-  }, [user, setMode]);
-
-  useEffect(() => {
-    if (cartMode === "server") syncFromServer();
-  }, [cartMode, token, syncFromServer]);
+    if (user) syncFromServer();
+  }, [user, token, syncFromServer]);
 
   return (
     <>

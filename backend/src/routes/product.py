@@ -1,13 +1,11 @@
-import json
 from typing import Annotated
-from fastapi import APIRouter, Cookie, HTTPException
+from fastapi import APIRouter, Cookie, Header, HTTPException
 from pydantic import BaseModel
 from starlette.status import HTTP_404_NOT_FOUND
 
 from src.core.database.crud import products as crud
 from src.core.security import get_current_user, is_admin
 from src.models.product import Product
-from src.core.database.crud import users
 
 
 class ProductObject(BaseModel):
@@ -43,8 +41,12 @@ async def get_products():
 
 
 @router.post("/product")
-async def create(object: ProductObject, access_token: Annotated[str | None, Cookie()]):
-    user = await get_current_user(access_token)
+async def create(
+    object: ProductObject,
+    access_token: Annotated[str | None, Cookie()] = None,
+    authorization: Annotated[str | None, Header()] = None,
+):
+    user = await get_current_user(access_token or authorization)
     await is_admin(user)
     product = Product(
         None,
@@ -63,11 +65,12 @@ async def create(object: ProductObject, access_token: Annotated[str | None, Cook
 
 @router.post("/products")
 async def create_multiples(
-    objects: list[ProductObject], access_token: Annotated[str | None, Cookie()]
+    objects: list[ProductObject],
+    access_token: Annotated[str | None, Cookie()] = None,
+    authorization: Annotated[str | None, Header()] = None,
 ):
-    user = await get_current_user(access_token)
+    user = await get_current_user(access_token or authorization)
     await is_admin(user)
-    products = []
     for object in objects:
         product = Product(
             None,
@@ -80,14 +83,17 @@ async def create_multiples(
             object.stock_quantity,
             object.featured,
         )
-        products.append(product)
         crud.create(product)
     return {"success": True}
 
 
 @router.delete("/product/{id}")
-async def delete(id: str, access_token: Annotated[str | None, Cookie()]):
-    user = await get_current_user(access_token)
+async def delete(
+    id: str,
+    access_token: Annotated[str | None, Cookie()] = None,
+    authorization: Annotated[str | None, Header()] = None,
+):
+    user = await get_current_user(access_token or authorization)
     await is_admin(user)
     product = crud.get(id)
     if product:
@@ -99,9 +105,11 @@ async def delete(id: str, access_token: Annotated[str | None, Cookie()]):
 
 @router.put("/products")
 async def edit(
-    objects: list[ProductObjectWithId], access_token: Annotated[str | None, Cookie()]
+    objects: list[ProductObjectWithId],
+    access_token: Annotated[str | None, Cookie()] = None,
+    authorization: Annotated[str | None, Header()] = None,
 ):
-    user = await get_current_user(access_token)
+    user = await get_current_user(access_token or authorization)
     await is_admin(user)
     products = []
     for object in objects:
@@ -117,11 +125,11 @@ async def edit(
             object.featured,
         )
         products.append(product)
-        if not crud.is_exist(product):
+        if not crud.is_exist(product.id):
             raise HTTPException(
                 status_code=HTTP_404_NOT_FOUND,
                 detail=f"Product id {product.id} do not exist",
             )
-    [crud.update(product) for product in products]
-    # crud.create(product)
+    for product in products:
+        crud.update(product)
     return {"success": True}

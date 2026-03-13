@@ -4,12 +4,29 @@ services:
       context: backend
     ports:
       - "8000:8000"
-    network_mode: host
     volumes:
       - "./storage:/app/storage"
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app
+          ignore:
+            - __pycache__/
+        - action: rebuild
+          path: ./backend/requirements.txt
+
   frontend:
     build:
       context: up-frontend
     ports:
       - "5173:5173"
-    network_mode: host
+    develop:
+      watch:
+        - action: sync
+          path: ./up-frontend
+          target: /app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./up-frontend/package.json

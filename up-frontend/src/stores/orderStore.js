@@ -9,6 +9,13 @@ function mapOrder(o) {
     createdAt: o.created_date ?? o.createdAt ?? new Date().toISOString(),
     total: Number(o.total_price ?? o.total ?? 0),
     status: o.status ?? "EN_PREPARATION",
+    email: o.email,
+    name: o.name,
+    address1: o.address1,
+    city: o.city,
+    zip: o.zip,
+    promoCode: o.promo_code ?? o.promo_id,
+    items: o.items,
   };
 }
 
@@ -19,10 +26,10 @@ export const useOrderStore = create(
       loading: false,
       error: "",
 
-      async createOrder({ promoId } = {}) {
+      async createOrder({ promoId, payload } = {}) {
         set({ loading: true, error: "" });
         try {
-          const res = await OrdersAPI.buy(promoId);
+          const res = await OrdersAPI.buy(promoId, payload);
           const order = mapOrder(res?.order || res?.content || res);
           if (order)
             set((s) => ({ orders: [order, ...s.orders], loading: false }));
@@ -66,10 +73,25 @@ export const useOrderStore = create(
         }
       },
 
+      async setStatus(id, status) {
+        set({ loading: true, error: "" });
+        try {
+          await OrdersAPI.updateStatus(id, status);
+          const next = get().orders.map((o) =>
+            o.id === id ? { ...o, status } : o,
+          );
+          set({ orders: next, loading: false });
+          return { ok: true };
+        } catch (e) {
+          set({ loading: false, error: e.message || "Erreur" });
+          return { ok: false, error: e.message };
+        }
+      },
+
       adminList() {
         return get().orders;
       },
     }),
-    { name: "up_orders_full" },
+    { name: "up_orders_full_v2" },
   ),
 );

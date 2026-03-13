@@ -15,6 +15,7 @@ def create_table():
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     """)
+    connection.commit()
 
 
 def create_user(username, email, password) -> User:

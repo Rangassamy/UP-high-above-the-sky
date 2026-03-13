@@ -9,19 +9,19 @@ export default function LoginPage(){
   const register = useAuthStore((s) => s.register);
 
   const [mode, setMode] = useState("login");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-    async function submit(){
+  async function submit(){
     setError("");
     try {
       if (mode === "login") {
-        const res = await login(email, password);
+        const res = await login(username, password);
         if (!res.ok) return setError(res.error || "Erreur.");
       } else {
-        // Backend expects {username, email, password}. We reuse the same input for now.
-        const res = await register(email, email, password);
+        const res = await register(username, email, password);
         if (!res.ok) return setError(res.error || "Erreur.");
       }
       navigate("/account");
@@ -30,12 +30,11 @@ export default function LoginPage(){
     }
   }
 
-
   return (
     <div className="col" style={{ maxWidth: 620 }}>
       <SectionTitle
         title={mode === "login" ? "Connexion" : "Inscription"}
-        subtitle="Client: email quelconque. Admin: admin@up.local"
+        subtitle="Compte admin de demo : admin@up.local / admin"
         right={<Link className="btn" to="/account">Compte</Link>}
       />
 
@@ -47,9 +46,25 @@ export default function LoginPage(){
 
         <div className="col" style={{ marginTop: 12 }}>
           <div>
-            <label>Email</label>
-            <input className="input" value={email} onChange={(e)=>setEmail(e.target.value)} />
+            <label>Nom d'utilisateur</label>
+            <input
+              className="input"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
           </div>
+
+          {mode === "register" ? (
+            <div>
+              <label>Email</label>
+              <input
+                className="input"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+          ) : null}
 
           <div>
             <label>Mot de passe</label>

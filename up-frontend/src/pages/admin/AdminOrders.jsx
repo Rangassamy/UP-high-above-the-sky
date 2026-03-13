@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useOrderStore } from "../../stores/orderStore";
 import { eur } from "../../lib/money";
 
@@ -12,6 +12,9 @@ const statuses = [
 export default function AdminOrders() {
   const orders = useOrderStore((s) => s.adminList());
   const setStatus = useOrderStore((s) => s.setStatus);
+  const fetchAll = useOrderStore((s) => s.fetchAllOrders);
+  const loading = useOrderStore((s) => s.loading);
+  const error = useOrderStore((s) => s.error);
 
   const [selectedId, setSelectedId] = useState("");
 
@@ -19,6 +22,10 @@ export default function AdminOrders() {
     () => orders.find((o) => o.id === selectedId) || null,
     [orders, selectedId]
   );
+
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
 
   return (
     <div className="col">
@@ -63,6 +70,8 @@ export default function AdminOrders() {
               ) : null}
             </tbody>
           </table>
+          {loading ? <div className="small">Chargement...</div> : null}
+          {error ? <div className="small" style={{ color: "#b91c1c" }}>{error}</div> : null}
         </div>
 
         <div style={{ width: 360, maxWidth: "100%" }}>
@@ -79,6 +88,10 @@ export default function AdminOrders() {
               <div className="kpi">
                 <span className="muted">Client</span>
                 <strong>{selected.email}</strong>
+              </div>
+              <div className="kpi">
+                <span className="muted">Nom</span>
+                <strong>{selected.name || ""}</strong>
               </div>
               <div className="kpi">
                 <span className="muted">Total</span>
@@ -108,9 +121,7 @@ export default function AdminOrders() {
                 <div style={{ fontWeight: 900 }}>Adresse</div>
                 <div className="small">{selected.name}</div>
                 <div className="small">{selected.address1}</div>
-                <div className="small">
-                  {selected.zip} {selected.city}
-                </div>
+                <div className="small">{selected.zip} {selected.city}</div>
               </div>
 
               <div className="glass card">

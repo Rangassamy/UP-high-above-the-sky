@@ -1,60 +1,41 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { CartAPI } from "../api/cart";
+import { getToken } from "../api/http";
 
 export const useCartStore = create(
   persist(
     (set, get) => ({
       items: [], // { productId, qty }
       promoCode: "",
-      mode: "local", // 'local' | 'server'
       loading: false,
       error: "",
 
       add(productId, qty = 1) {
         const q = Math.max(1, Number(qty || 1));
-        if (get().mode === "server") return get().addServer(productId, q);
-        set((state) => {
-          const found = state.items.find((it) => it.productId === productId);
-          if (found) {
-            return {
-              items: state.items.map((it) =>
-                it.productId === productId ? { ...it, qty: it.qty + q } : it,
-              ),
-            };
-          }
-          return { items: [...state.items, { productId, qty: q }] };
-        });
+        return get().addServer(productId, q);
       },
 
       setQty(productId, qty) {
         const q = Math.max(1, Number(qty || 1));
-        if (get().mode === "server") return get().setQtyServer(productId, q);
-        set((state) => ({
-          items: state.items.map((it) =>
-            it.productId === productId ? { ...it, qty: q } : it,
-          ),
-        }));
+        return get().setQtyServer(productId, q);
       },
 
       remove(productId) {
-        if (get().mode === "server") return get().removeServer(productId);
-        set((state) => ({
-          items: state.items.filter((it) => it.productId !== productId),
-        }));
+        return get().removeServer(productId);
       },
 
       clear() {
-        if (get().mode === "server") return get().clearServer();
-        set({ items: [], promoCode: "" });
-      },
-
-      setMode(mode) {
-        set({ mode: mode === "server" ? "server" : "local" });
+        return get().clearServer();
       },
 
       // ---- Server cart helpers (safe no-op if backend isn't ready) ----
       async syncFromServer() {
+        if (!getToken()) {
+          set({ error: "Connexion requise pour le panier" });
+          return { ok: false, error: "login_required" };
+        }
+
         set({ loading: true, error: "" });
         try {
           const raw = await CartAPI.list();
@@ -78,6 +59,11 @@ export const useCartStore = create(
       },
 
       async addServer(productId, qty) {
+        if (!getToken()) {
+          set({ error: "Connexion requise pour le panier" });
+          return { ok: false, error: "login_required" };
+        }
+
         set({ loading: true, error: "" });
         try {
           const pid = Number(productId);
@@ -90,22 +76,23 @@ export const useCartStore = create(
           }
 
           const pidStr = String(pid);
+          const existing = get().items.find((it) => it.productId === pidStr);
+          const nextQty = existing ? existing.qty + qty : qty;
 
           // Optimistic UI update (visible immédiatement)
           set((state) => {
-            const found = state.items.find((it) => it.productId === pidStr);
-            if (found) {
+            if (existing) {
               return {
                 items: state.items.map((it) =>
-                  it.productId === pidStr ? { ...it, qty: it.qty + qty } : it,
+                  it.productId === pidStr ? { ...it, qty: nextQty } : it,
                 ),
               };
             }
-            return { items: [...state.items, { productId: pidStr, qty }] };
+            return { items: [...state.items, { productId: pidStr, qty: nextQty }] };
           });
 
           // Server write
-          await CartAPI.add(pid, qty);
+          await CartAPI.add(pid, nextQty);
 
           // Authoritative sync
           await get().syncFromServer();
@@ -119,11 +106,55 @@ export const useCartStore = create(
       },
 
       async setQtyServer(productId, qty) {
-        // Many simple backends use the same add endpoint for update.
-        return get().addServer(productId, qty);
+        if (!getToken()) {
+          set({ error: "Connexion requise pour le panier" });
+          return { ok: false, error: "login_required" };
+        }
+
+        set({ loading: true, error: "" });
+        try {
+          const pid = Number(productId);
+          if (!Number.isFinite(pid)) {
+            set({
+              loading: false,
+              error: "ID produit invalide (pas un nombre).",
+            });
+            return { ok: false, error: "invalid_product_id" };
+          }
+
+          const pidStr = String(pid);
+          const nextQty = Math.max(1, Number(qty || 1));
+
+          set((state) => {
+            const found = state.items.find((it) => it.productId === pidStr);
+            if (found) {
+              return {
+                items: state.items.map((it) =>
+                  it.productId === pidStr ? { ...it, qty: nextQty } : it,
+                ),
+              };
+            }
+
+            return { items: [...state.items, { productId: pidStr, qty: nextQty }] };
+          });
+
+          await CartAPI.add(pid, nextQty);
+          await get().syncFromServer();
+
+          set({ loading: false });
+          return { ok: true };
+        } catch (e) {
+          set({ loading: false, error: e.message || "Erreur" });
+          return { ok: false, error: e.message };
+        }
       },
 
       async removeServer(productId) {
+        if (!getToken()) {
+          set({ error: "Connexion requise pour le panier" });
+          return { ok: false, error: "login_required" };
+        }
+
         set({ loading: true, error: "" });
         try {
           const pid = Number(productId);
@@ -154,6 +185,11 @@ export const useCartStore = create(
       },
 
       async clearServer() {
+        if (!getToken()) {
+          set({ error: "Connexion requise pour le panier" });
+          return { ok: false, error: "login_required" };
+        }
+
         set({ loading: true, error: "" });
         try {
           await CartAPI.clear();
@@ -177,6 +213,6 @@ export const useCartStore = create(
         return get().items.reduce((s, it) => s + it.qty, 0);
       },
     }),
-    { name: "up_cart_full" },
+    { name: "up_cart_full_v2" },
   ),
 );

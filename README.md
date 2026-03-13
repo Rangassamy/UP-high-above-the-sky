@@ -1,37 +1,48 @@
 ## Découvrir le projet
 
-Bienvenue dans **UP – High Above the Sky**, une mini boutique en ligne un peu spéciale  
-Ici, tout se passe **dans les airs**… mais surtout côté code.
+Bienvenue dans **UP - High Above the Sky**, une mini boutique en ligne de
+vêtements et accessoires.
 
-Le site est divisé en **deux rôles** :
+Le site sépare bien :
 
----
+- un **frontend React/Vite**
+- un **backend FastAPI**
+- une **base SQLite**
 
-### Mode Utilisateur
+## Fonctionnalités
 
-En tant qu’utilisateur, vous pouvez :
+### Mode utilisateur
 
-- Explorer les produits
-- Ajouter des articles au panier
-- Modifier le panier
-- Passer une commande
-- Retrouver vos commandes dans votre espace personnel
+- explorer les produits
+- ajouter des articles au panier
+- modifier le panier
+- passer une commande avec paiement simulé
+- retrouver ses commandes dans l'espace compte
 
-Tout ce que vous faites (panier, commande, etc.) est géré par le **serveur**, pas par le navigateur. Le site se comporte comme une vraie boutique en ligne.
+### Mode administrateur
 
----
+- ajouter, modifier ou supprimer des produits
+- créer et gérer des codes promotionnels
+- voir toutes les commandes
+- changer le statut d'une commande
 
-### Mode Administrateur
+## Lancement
 
-Et là, c’est la partie fun
-En tant qu’**administratrice**, vous avez les pleins pouvoirs :
+Depuis la racine du projet :
 
-- Ajouter, modifier ou supprimer des **produits**
-- Créer et gérer des **codes promotionnels**
-- Voir **toutes les commandes passées par les utilisateurs**
-- Suivre les commandes en temps réel côté serveur
+```bash
+docker compose up
+```
 
-Bref, vous êtes la boss du site
-Tout ce que vous changez en admin a un impact direct sur le site utilisateur.
+## Données de demo
 
-Pour lancer le projet il suffit simplement depuis la racine du projet ecrire "docker compose up"
+Si la base est vide, le backend ajoute automatiquement :
+
+- quelques produits
+- deux codes promo (`UP10` et `WELCOME5`)
+- un compte administrateur de demo
+
+Compte admin :
+
+- identifiant : `admin@up.local`
+- mot de passe : `admin`

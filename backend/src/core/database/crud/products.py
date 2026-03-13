@@ -1,11 +1,5 @@
-from typing import Annotated
-from fastapi import Cookie
 from src.core.database.db import connection
-from src.core.security import get_current_user, is_admin
 from src.models.product import Product
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 def create_table():

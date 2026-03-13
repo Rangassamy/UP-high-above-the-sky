@@ -8,7 +8,7 @@ def create_table():
     cur.execute("""
         CREATE TABLE IF NOT EXISTS carts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        product_id INTEGER TEXT NOT NULL,
+        product_id INTEGER NOT NULL,
         quantity INTEGER NOT NULL,
         user_id INTEGER NOT NULL,
         FOREIGN KEY (product_id) REFERENCES products(id),
@@ -39,9 +39,12 @@ def get(id: int) -> Optional[Cart]:
     return None
 
 
-def get_by_product(product_id: int) -> Optional[Cart]:
+def get_by_product(product_id: int, user_id: int) -> Optional[Cart]:
     cur = connection.cursor()
-    cur.execute("SELECT * FROM carts WHERE product_id = ?;", (product_id,))
+    cur.execute(
+        "SELECT * FROM carts WHERE product_id = ? AND user_id = ?;",
+        (product_id, user_id),
+    )
     row = cur.fetchone()
     if row:
         return Cart(product_id=row[1], quantity=row[2], user_id=row[3])
@@ -65,8 +68,8 @@ def get_by_user(user_id: str) -> List[Cart]:
 def update(cart: Cart):
     cur = connection.cursor()
     cur.execute(
-        "UPDATE carts SET quantity = ? WHERE product_id = ?;",
-        (cart.quantity, cart.product_id),
+        "UPDATE carts SET quantity = ? WHERE product_id = ? AND user_id = ?;",
+        (cart.quantity, cart.product_id, cart.user_id),
     )
     connection.commit()
 
@@ -77,9 +80,9 @@ def delete(id: int):
     connection.commit()
 
 
-def delete_by_product(id: int):
+def delete_by_product(id: int, user_id: int):
     cur = connection.cursor()
-    cur.execute("DELETE FROM carts WHERE product_id = ?;", (id,))
+    cur.execute("DELETE FROM carts WHERE product_id = ? AND user_id = ?;", (id, user_id))
     connection.commit()
 
 

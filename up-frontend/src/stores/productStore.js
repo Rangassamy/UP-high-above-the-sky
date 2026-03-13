@@ -1,23 +1,16 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { SEED_PRODUCTS } from "../data/seed";
 import { makeSlug } from "../lib/slug";
 import { ProductsAPI } from "../api/products";
-
-function loadSeed() {
-  return SEED_PRODUCTS.map((p) => ({ ...p }));
-}
 
 export const useProductStore = create(
   persist(
     (set, get) => ({
-      products: loadSeed(),
+      products: [],
       loading: false,
       error: "",
       hydrated: false,
 
-      // Remote-first bootstrap. If backend has no products yet or route isn't available,
-      // we keep the local seed so the UI remains usable in dev.
       async fetchProducts() {
         set({ loading: true, error: "" });
         try {
@@ -26,7 +19,6 @@ export const useProductStore = create(
             ? raw
             : raw?.content || raw?.items || [];
 
-          // Map backend fields -> front fields (tolerant mapping)
           const mapped = list.map((p) => ({
             id: String(p.id ?? p.product_id ?? p._id ?? ""),
             name: p.name ?? p.title ?? "",
@@ -47,17 +39,11 @@ export const useProductStore = create(
           set({ products: mapped, hydrated: true, loading: false });
           return { ok: true };
         } catch (e) {
-          // Keep seed data; expose error for debugging.
-          set({
-            loading: false,
-            error: e.message || "Erreur produits",
-            hydrated: true,
-          });
+          set({ loading: false, error: e.message || "Erreur produits", hydrated: true });
           return { ok: false, error: e.message };
         }
       },
 
-      // Admin: create/update product via backend, then refresh list
       async saveProduct(product) {
         set({ loading: true, error: "" });
         try {
@@ -73,10 +59,8 @@ export const useProductStore = create(
           };
 
           if (product.id) {
-            // Backend expects PUT /products with a list of objects with id
             await ProductsAPI.updateOne({ id: String(product.id), ...payload });
           } else {
-            // Backend expects POST /product for a single product
             await ProductsAPI.createOne(payload);
           }
 
@@ -89,7 +73,6 @@ export const useProductStore = create(
         }
       },
 
-      // Admin: delete product via backend, then refresh list
       async deleteProduct(id) {
         set({ loading: true, error: "" });
         try {
@@ -171,6 +154,6 @@ export const useProductStore = create(
         }));
       },
     }),
-    { name: "up_products_full" },
+    { name: "up_products_full_v2" },
   ),
 );
