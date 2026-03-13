@@ -29,7 +29,10 @@ export const useCartStore = create(
         return get().clearServer();
       },
 
-      // ---- Server cart helpers (safe no-op if backend isn't ready) ----
+      resetLocal() {
+        set({ items: [], promoCode: "", loading: false, error: "" });
+      },
+
       async syncFromServer() {
         if (!getToken()) {
           set({ error: "Connexion requise pour le panier" });
@@ -79,7 +82,6 @@ export const useCartStore = create(
           const existing = get().items.find((it) => it.productId === pidStr);
           const nextQty = existing ? existing.qty + qty : qty;
 
-          // Optimistic UI update (visible immédiatement)
           set((state) => {
             if (existing) {
               return {
@@ -91,10 +93,7 @@ export const useCartStore = create(
             return { items: [...state.items, { productId: pidStr, qty: nextQty }] };
           });
 
-          // Server write
           await CartAPI.add(pid, nextQty);
-
-          // Authoritative sync
           await get().syncFromServer();
 
           set({ loading: false });
@@ -168,7 +167,6 @@ export const useCartStore = create(
 
           const pidStr = String(pid);
 
-          // Optimistic remove
           set((state) => ({
             items: state.items.filter((it) => it.productId !== pidStr),
           }));

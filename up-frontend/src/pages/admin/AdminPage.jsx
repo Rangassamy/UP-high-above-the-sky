@@ -11,7 +11,7 @@ export default function AdminPage(){
     return (
       <EmptyState
         title="Admin"
-        text="Connecte-toi."
+        text="Connecte-toi avec un compte administrateur pour gerer la boutique."
         action={<button className="btn primary" onClick={() => navigate("/login")}>Aller au login</button>}
       />
     );
@@ -29,7 +29,7 @@ export default function AdminPage(){
 
   return (
     <div className="col">
-      <SectionTitle title="Admin" subtitle="Produits • Stock • Commandes • Promos" />
+      <SectionTitle title="Admin" subtitle="Gestion simple du catalogue, des commandes et des promotions" />
 
       <div className="admin-shell">
         <aside className="glass card sidebar">

@@ -9,7 +9,7 @@ const blank = {
   category: "caps",
   price: 39,
   description: "",
-  images: ["https://via.placeholder.com/1200x800?text=UP+Product"],
+  images: ["/image.png"],
   stockQty: 0,
   featured: false,
 };
@@ -108,7 +108,7 @@ export default function AdminProducts() {
 
         <div className="col" style={{ width: 360, maxWidth: "100%" }}>
           <div style={{ fontWeight: 900 }}>Éditeur</div>
-          <div className="small">Créer ou modifier un produit.</div>
+          <div className="small">Creer ou modifier un produit sans alourdir l'interface.</div>
 
           <div className="row wrap">
             <button className="btn" onClick={() => setEditing(blank)}>
@@ -159,8 +159,8 @@ export default function AdminProducts() {
                   setEditing({ ...editing, category: e.target.value })
                 }
               >
-                <option value="caps">caps</option>
-                <option value="vetements">vetements</option>
+                <option value="caps">Casquettes</option>
+                <option value="vetements">Vetements</option>
               </select>
             </div>
             <div style={{ width: 140 }}>
@@ -190,7 +190,7 @@ export default function AdminProducts() {
           </div>
 
           <div>
-            <label>Image URL (V1)</label>
+            <label>Image URL</label>
             <input
               className="input"
               value={editing.images?.[0] || ""}

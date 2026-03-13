@@ -142,7 +142,7 @@ export default function AdminPromos() {
           </label>
 
           <div className="small">
-            Test: va au panier/checkout et mets le code.
+            Ces codes sont verifies au moment du paiement simule.
           </div>
         </div>
       </div>

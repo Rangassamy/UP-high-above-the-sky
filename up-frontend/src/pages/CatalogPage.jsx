@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import SectionTitle from "../components/SectionTitle";
 import ProductCard from "../components/ProductCard";
 import EmptyState from "../components/EmptyState";
@@ -7,12 +7,13 @@ import { useProductStore } from "../stores/productStore";
 import { useCartStore } from "../stores/cartStore";
 
 export default function CatalogPage() {
+  const navigate = useNavigate();
   const [sp] = useSearchParams();
   const q = String(sp.get("q") || "")
     .trim()
     .toLowerCase();
 
-  const productsAll = useProductStore((s) => s.products); // <-- IMPORTANT: tableau brut
+  const productsAll = useProductStore((s) => s.products);
   const add = useCartStore((s) => s.add);
 
   const [filters, setFilters] = useState({
@@ -47,7 +48,7 @@ export default function CatalogPage() {
     <div className="col">
       <SectionTitle
         title="Catalogue"
-        subtitle={q ? `Résultats pour “${q}”` : "Tous les produits"}
+        subtitle={q ? `Resultats pour “${q}”` : "Notre selection complete"}
         right={
           <Link className="btn" to="/cart">
             Voir panier
@@ -122,7 +123,10 @@ export default function CatalogPage() {
                   <button
                     className="btn primary"
                     disabled={p.stockQty <= 0}
-                    onClick={() => add(p.id, 1)}
+                    onClick={async () => {
+                      const res = await add(p.id, 1);
+                      if (res?.error === "login_required") navigate("/login");
+                    }}
                   >
                     Ajouter
                   </button>

@@ -6,20 +6,20 @@ import { useProductStore } from "../stores/productStore";
 
 export default function AppLayout() {
   const navigate = useNavigate();
-  const count = useCartStore((s) =>
-    s.items.reduce((sum, it) => sum + it.qty, 0),
-  );
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const resetCart = useCartStore((s) => s.resetLocal);
+  const count = useCartStore((s) =>
+    user ? s.items.reduce((sum, it) => sum + it.qty, 0) : 0,
+  );
   const fetchProducts = useProductStore((s) => s.fetchProducts);
-  const productsHydrated = useProductStore((s) => s.hydrated);
   const syncFromServer = useCartStore((s) => s.syncFromServer);
   const token = useAuthStore((s) => s.token);
   const fetchMe = useAuthStore((s) => s.fetchMe);
 
   useEffect(() => {
-    if (!productsHydrated) fetchProducts();
-  }, [fetchProducts, productsHydrated]);
+    fetchProducts();
+  }, [fetchProducts]);
 
   useEffect(() => {
     fetchMe();
@@ -96,8 +96,9 @@ export default function AppLayout() {
             {user ? (
               <button
                 className="btn"
-                onClick={() => {
-                  logout();
+                onClick={async () => {
+                  await logout();
+                  resetCart();
                   navigate("/");
                 }}
               >

@@ -55,7 +55,9 @@ export async function api(path, { method = "GET", body, auth = true } = {}) {
 
   if (!res.ok) {
     const msg = data?.detail || data?.message || raw || `HTTP ${res.status}`;
-    throw new Error(msg);
+    const error = new Error(msg);
+    error.status = res.status;
+    throw error;
   }
 
   // If response is empty (e.g. 204), return null.

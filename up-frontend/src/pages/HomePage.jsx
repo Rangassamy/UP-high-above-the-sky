@@ -1,11 +1,12 @@
 import { useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import SectionTitle from "../components/SectionTitle";
 import { useProductStore } from "../stores/productStore";
 import { useCartStore } from "../stores/cartStore";
 import { eur } from "../lib/money";
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const productsAll = useProductStore((s) => s.products);
   const add = useCartStore((s) => s.add);
 
@@ -14,12 +15,11 @@ export default function HomePage() {
     return pub.find((p) => p.featured) || pub[0] || null;
   }, [productsAll]);
 
-  // ... reste inchangé
   return (
     <div className="col">
       <SectionTitle
         title="UP"
-        subtitle="E-commerce classique, design nuageux futuriste."
+        subtitle="Collection fictive de vetements et accessoires inspires des lignes du ciel."
         right={
           <Link className="btn primary" to="/catalog">
             Aller au catalogue
@@ -63,7 +63,10 @@ export default function HomePage() {
                   <button
                     className="btn primary"
                     disabled={featured.stockQty <= 0}
-                    onClick={() => add(featured.id, 1)}
+                    onClick={async () => {
+                      const res = await add(featured.id, 1);
+                      if (res?.error === "login_required") navigate("/login");
+                    }}
                   >
                     Ajouter au panier
                   </button>
@@ -76,7 +79,7 @@ export default function HomePage() {
 
           <div style={{ width: 460, maxWidth: "100%" }}>
             <img
-              src={featured?.images?.[0]}
+              src={featured?.images?.[0] || "/image.png"}
               alt={featured?.name || "UP"}
               style={{
                 width: "100%",
@@ -95,7 +98,7 @@ export default function HomePage() {
         <div className="glass card" style={{ flex: 1 }}>
           <div style={{ fontWeight: 900 }}>Casquettes</div>
           <div className="muted" style={{ marginTop: 6 }}>
-            La base de la marque.
+            Des modeles simples, portables et faciles a expliquer dans une demo.
           </div>
           <div style={{ marginTop: 10 }}>
             <Link className="btn" to="/category/caps">
@@ -107,7 +110,7 @@ export default function HomePage() {
         <div className="glass card" style={{ flex: 1 }}>
           <div style={{ fontWeight: 900 }}>Vêtements</div>
           <div className="muted" style={{ marginTop: 6 }}>
-            Ensembles, hoodies, etc.
+            Hoodies, sweats et packs textiles dans le meme univers graphique.
           </div>
           <div style={{ marginTop: 10 }}>
             <Link className="btn" to="/category/vetements">
@@ -119,7 +122,7 @@ export default function HomePage() {
         <div className="glass card" style={{ flex: 1 }}>
           <div style={{ fontWeight: 900 }}>Promos</div>
           <div className="muted" style={{ marginTop: 6 }}>
-            Code exemple: UP10
+            Le code promo UP10 permet de tester facilement la reduction au checkout.
           </div>
           <div style={{ marginTop: 10 }}>
             <Link className="btn" to="/catalog">

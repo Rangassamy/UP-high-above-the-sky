@@ -18,6 +18,7 @@ export default function ProductPage() {
   const product = useMemo(() => {
     return productsAll.find((p) => p.slug === slug) || null;
   }, [productsAll, slug]);
+  const image = product?.images?.[0] || "/image.png";
 
   if (!product || !product.active) {
     return (
@@ -50,7 +51,7 @@ export default function ProductPage() {
       <div className="row wrap">
         <div className="glass card" style={{ flex: 1 }}>
           <img
-            src={product.images?.[0]}
+            src={image}
             alt={product.name}
             style={{
               width: "100%",
@@ -84,8 +85,12 @@ export default function ProductPage() {
             <button
               className="btn primary"
               disabled={product.stockQty <= 0}
-              onClick={() => {
-                add(product.id, qty);
+              onClick={async () => {
+                const res = await add(product.id, qty);
+                if (res?.error === "login_required") {
+                  navigate("/login");
+                  return;
+                }
                 navigate("/cart");
               }}
             >
@@ -99,7 +104,7 @@ export default function ProductPage() {
           <div className="hr" />
 
           <div className="small">
-            Catégorie:{" "}
+            Categorie :{" "}
             <Link to={`/category/${product.category}`}>{product.category}</Link>
           </div>
         </div>

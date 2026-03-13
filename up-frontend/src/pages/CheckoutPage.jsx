@@ -134,7 +134,7 @@ export default function CheckoutPage() {
     <div className="col">
       <SectionTitle
         title="Paiement"
-        subtitle="Commande créée côté serveur."
+        subtitle="Simulation de paiement avec enregistrement cote serveur."
         right={
           <Link className="btn" to="/cart">
             Retour panier
@@ -196,8 +196,8 @@ export default function CheckoutPage() {
             <div className="hr" />
 
             <div className="small">
-              En vrai paiement: Stripe + webhook (quand tu demanderas le
-              backend).
+              Le paiement reste volontairement simule pour conserver un projet
+              simple, lisible et facile a expliquer.
             </div>
           </div>
         </div>
@@ -272,7 +272,8 @@ export default function CheckoutPage() {
             </button>
 
             <div className="small">
-              La commande est créée à partir du panier serveur.
+              La commande est creee a partir du panier serveur puis consultable
+              dans l'espace compte.
             </div>
           </div>
         </aside>

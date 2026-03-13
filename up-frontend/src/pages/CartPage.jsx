@@ -28,7 +28,7 @@ export default function CartPage(){
     <div className="col">
       <SectionTitle
         title="Panier"
-        subtitle="Vérifie tes articles avant paiement."
+        subtitle="Relis ta selection avant la simulation de paiement."
         right={<Link className="btn" to="/catalog">Continuer les achats</Link>}
       />
 
@@ -46,7 +46,7 @@ export default function CartPage(){
                 <div key={l.productId} className="row wrap" style={{ alignItems:"center", justifyContent:"space-between" }}>
                   <div className="row" style={{ alignItems:"center" }}>
                     <img
-                      src={l.product.images?.[0]}
+                      src={l.product.images?.[0] || "/image.png"}
                       alt={l.product.name}
                       style={{ width: 110, height: 78, objectFit:"cover", borderRadius: 14, border:"1px solid var(--border)" }}
                     />
@@ -96,7 +96,7 @@ export default function CartPage(){
                 onChange={(e) => setPromoCode(e.target.value)}
                 placeholder="Ex: UP10"
               />
-              <div className="small" style={{ marginTop: 6 }}>Le code sera validé au checkout.</div>
+              <div className="small" style={{ marginTop: 6 }}>Le code sera verifie au moment du paiement simule.</div>
             </div>
 
             <div className="row wrap" style={{ marginTop: 14 }}>

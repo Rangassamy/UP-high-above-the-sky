@@ -11,8 +11,8 @@ DEMO_PRODUCTS = [
         "Casquette White Cloud",
         "caps",
         39,
-        "Casquette blanche premium. Minimal, propre.",
-        "https://via.placeholder.com/1200x800?text=UP+White+Cap",
+        "Casquette blanche a visiere courbe, broderie UP ton sur ton et coton epais pour un usage quotidien.",
+        "https://via.placeholder.com/1200x800/F4F1EA/1E293B?text=UP+White+Cloud",
         25,
         True,
     ),
@@ -22,9 +22,20 @@ DEMO_PRODUCTS = [
         "Casquette Storm Grey",
         "caps",
         39,
-        "Variante grise. Meme coupe, meme qualite.",
-        "https://via.placeholder.com/1200x800?text=UP+Storm+Cap",
+        "Version gris orage avec fermeture ajustable et interieur renforce pour garder une belle tenue.",
+        "https://via.placeholder.com/1200x800/E5E7EB/1F2937?text=UP+Storm+Grey",
         12,
+        False,
+    ),
+    Product(
+        None,
+        "casquette-sunset-line",
+        "Casquette Sunset Line",
+        "caps",
+        42,
+        "Modele beige sable avec surpiqures orange et finition plus sport, pense pour les sorties en ville.",
+        "https://via.placeholder.com/1200x800/FDE7C7/7C2D12?text=UP+Sunset+Line",
+        9,
         False,
     ),
     Product(
@@ -33,9 +44,31 @@ DEMO_PRODUCTS = [
         "Hoodie Cloud",
         "vetements",
         79,
-        "Hoodie nuage. Serie limitee.",
-        "https://via.placeholder.com/1200x800?text=UP+Hoodie",
+        "Hoodie coupe droite, interieur molletonne et logo poitrine discret. Piece phare de la collection.",
+        "https://via.placeholder.com/1200x800/DBEAFE/1D4ED8?text=UP+Hoodie+Cloud",
         8,
+        False,
+    ),
+    Product(
+        None,
+        "sweat-altitude-crew",
+        "Sweat Altitude Crew",
+        "vetements",
+        69,
+        "Sweat col rond bleu nuit, confortable et facile a porter avec un jean ou un pantalon cargo.",
+        "https://via.placeholder.com/1200x800/DBEAFE/172554?text=UP+Altitude+Crew",
+        14,
+        False,
+    ),
+    Product(
+        None,
+        "chaussettes-contrail-pack",
+        "Pack Chaussettes Contrail",
+        "vetements",
+        19,
+        "Lot de trois paires en coton souple, logo tisse et maintien elastique simple pour tous les jours.",
+        "https://via.placeholder.com/1200x800/F8FAFC/334155?text=UP+Contrail+Pack",
+        30,
         False,
     ),
 ]
@@ -60,17 +93,24 @@ def seed_admin():
 
 
 def seed_products():
-    if products.get_all():
-        return
+    existing_by_slug = {product.slug: product for product in products.get_all()}
     for product in DEMO_PRODUCTS:
-        products.create(product)
+        existing = existing_by_slug.get(product.slug)
+        if existing:
+            product.id = existing.id
+            products.update(product)
+        else:
+            products.create(product)
 
 
 def seed_promos():
-    if promo_codes.get_all():
-        return
     for promo_code in DEMO_PROMOS:
-        promo_codes.create(promo_code)
+        existing = promo_codes.get_by_code(promo_code.code)
+        if existing:
+            promo_code.id = existing.id
+            promo_codes.update(promo_code)
+        else:
+            promo_codes.create(promo_code)
 
 
 def init():

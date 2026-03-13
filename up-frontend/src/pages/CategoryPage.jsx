@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import SectionTitle from "../components/SectionTitle";
 import ProductCard from "../components/ProductCard";
 import EmptyState from "../components/EmptyState";
@@ -9,6 +9,7 @@ import { useCartStore } from "../stores/cartStore";
 const label = { caps: "Casquettes", vetements: "Vêtements" };
 
 export default function CategoryPage() {
+  const navigate = useNavigate();
   const { category } = useParams();
 
   const productsAll = useProductStore((s) => s.products);
@@ -22,7 +23,7 @@ export default function CategoryPage() {
     <div className="col">
       <SectionTitle
         title={label[category] || category}
-        subtitle="Liste des produits"
+        subtitle="Selection de la categorie"
         right={
           <Link className="btn" to="/catalog">
             Retour catalogue
@@ -54,7 +55,10 @@ export default function CategoryPage() {
                   <button
                     className="btn primary"
                     disabled={p.stockQty <= 0}
-                    onClick={() => add(p.id, 1)}
+                    onClick={async () => {
+                      const res = await add(p.id, 1);
+                      if (res?.error === "login_required") navigate("/login");
+                    }}
                   >
                     Ajouter
                   </button>

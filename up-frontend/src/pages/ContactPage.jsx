@@ -12,7 +12,7 @@ export default function ContactPage(){
     <div className="col" style={{ maxWidth: 760 }}>
       <SectionTitle
         title="Contact"
-        subtitle="Formulaire classique."
+        subtitle="Une question sur un produit, une commande ou un code promo ?"
       />
 
       <form
@@ -20,10 +20,12 @@ export default function ContactPage(){
         onSubmit={async (e) => {
           e.preventDefault();
           setError("");
+          setSent(false);
           setSending(true);
           try {
             await ContactAPI.send(form);
             setSent(true);
+            setForm({ name:"", email:"", subject:"", message:"" });
           } catch (err) {
             setError(err.message || "Erreur d'envoi");
           } finally {
@@ -38,7 +40,7 @@ export default function ContactPage(){
           </div>
           <div style={{ flex: 1 }}>
             <label>Email</label>
-            <input className="input" value={form.email} onChange={(e)=>setForm({ ...form, email: e.target.value })} />
+            <input className="input" type="email" value={form.email} onChange={(e)=>setForm({ ...form, email: e.target.value })} />
           </div>
         </div>
 
@@ -64,12 +66,12 @@ export default function ContactPage(){
 
         {sent ? (
           <div className="glass card" style={{ borderColor: "rgba(34,197,94,0.35)", color:"#166534" }}>
-            Message envoyé.
+            Message envoye. Nous reviendrons vers toi des que possible.
           </div>
         ) : null}
 
         <div className="small">
-          Email: contact@up.local • Instagram: @up
+          Support fictif : contact@up-high-sky.fr • Reponse sous 48 h ouvrées
         </div>
       </form>
     </div>

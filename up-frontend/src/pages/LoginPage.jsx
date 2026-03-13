@@ -16,6 +16,14 @@ export default function LoginPage(){
 
   async function submit(){
     setError("");
+    if (!username.trim() || !password) {
+      setError("Renseigne ton identifiant et ton mot de passe.");
+      return;
+    }
+    if (mode === "register" && !email.trim()) {
+      setError("Renseigne aussi une adresse email pour l'inscription.");
+      return;
+    }
     try {
       if (mode === "login") {
         const res = await login(username, password);
@@ -34,7 +42,7 @@ export default function LoginPage(){
     <div className="col" style={{ maxWidth: 620 }}>
       <SectionTitle
         title={mode === "login" ? "Connexion" : "Inscription"}
-        subtitle="Compte admin de demo : admin@up.local / admin"
+        subtitle="Compte admin de demonstration : admin@up.local / admin"
         right={<Link className="btn" to="/account">Compte</Link>}
       />
 

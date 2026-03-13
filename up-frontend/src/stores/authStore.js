@@ -49,18 +49,18 @@ export const useAuthStore = create(
           if (user) set({ user });
           return { ok: true, user };
         } catch (e) {
-          // 401 = not logged in yet (normal). Also tolerate missing /me.
-          if (String(e.message || "").includes("401")) {
-            set({ user: null });
+          if (e?.status === 401) {
+            clearToken();
+            set({ user: null, token: null });
             return { ok: true, user: null };
           }
           return { ok: false, error: e.message };
         }
       },
-      logout() {
-        AuthAPI.logout();
+      async logout() {
+        await AuthAPI.logout();
         clearToken();
-        set({ user: null, token: null });
+        set({ user: null, token: null, error: "" });
       },
     }),
     { name: "up-auth" },

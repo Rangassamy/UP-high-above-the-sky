@@ -15,7 +15,13 @@ function mapOrder(o) {
     city: o.city,
     zip: o.zip,
     promoCode: o.promo_code ?? o.promo_id,
-    items: o.items,
+    items: Array.isArray(o.items)
+      ? o.items.map((item) => ({
+          qty: Number(item.qty ?? item.quantity ?? 1),
+          name: item.name ?? "Produit",
+          lineTotal: Number(item.lineTotal ?? item.line_total ?? 0),
+        }))
+      : [],
   };
 }
 

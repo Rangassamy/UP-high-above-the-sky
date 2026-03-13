@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import SectionTitle from "../components/SectionTitle";
 import EmptyState from "../components/EmptyState";
 import { useAuthStore } from "../stores/authStore";
+import { useCartStore } from "../stores/cartStore";
 import { useOrderStore } from "../stores/orderStore";
 import { eur } from "../lib/money";
 
@@ -19,6 +20,7 @@ export default function AccountPage() {
 
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const resetCart = useCartStore((s) => s.resetLocal);
   const orders = useOrderStore((s) => s.orders);
   const fetchMyOrders = useOrderStore((s) => s.fetchMyOrders);
   const ordersLoading = useOrderStore((s) => s.loading);
@@ -51,8 +53,9 @@ export default function AccountPage() {
             ) : null}
             <button
               className="btn"
-              onClick={() => {
-                logout();
+              onClick={async () => {
+                await logout();
+                resetCart();
                 navigate("/");
               }}
             >
@@ -81,11 +84,20 @@ export default function AccountPage() {
         {tab === "profile" ? (
           <div className="col" style={{ marginTop: 12 }}>
             <div className="kpi">
+              <span className="muted">Nom d'utilisateur</span>
+              <strong>{user.username}</strong>
+            </div>
+            <div className="kpi">
               <span className="muted">Email</span>
               <strong>{user.email}</strong>
             </div>
+            <div className="kpi">
+              <span className="muted">Rôle</span>
+              <strong>{user.role === "admin" ? "Administrateur" : "Client"}</strong>
+            </div>
             <div className="small">
-              Profil minimal. Le backend ajoutera plus tard des champs.
+              Ce compte permet de suivre les commandes et de retrouver les
+              informations saisies lors du paiement.
             </div>
           </div>
         ) : (
@@ -109,7 +121,7 @@ export default function AccountPage() {
             ) : orders.length === 0 ? (
               <EmptyState
                 title="Aucune commande"
-                text="Fais une commande via le checkout."
+                text="Tes prochaines commandes apparaîtront ici après validation du paiement simulé."
                 action={
                   <Link className="btn primary" to="/catalog">
                     Aller au catalogue
@@ -144,7 +156,7 @@ export default function AccountPage() {
                     <div className="hr" />
 
                     <div className="small">
-                      Commande créée à partir du panier serveur.
+                      Adresse de livraison : {o.address1}, {o.zip} {o.city}
                     </div>
                   </div>
                 ))}
