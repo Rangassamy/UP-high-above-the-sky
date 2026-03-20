@@ -8,7 +8,7 @@
 - Auteurs :
   - Nolane Delumeau
   - Enzo Rangassamy
-  - Mathis
+  - Mathis Lebon
 - Niveau : Terminale specialite Mathematiques et NSI
 
 ## Intention
