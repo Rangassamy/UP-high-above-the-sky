@@ -1,7 +1,9 @@
+/* API des commandes client et administration. */
+
 import { api } from "./http";
 
 export const OrdersAPI = {
-  // Client: crée une commande depuis le panier serveur
+  // Cree une commande a partir du panier stocke cote backend.
   buy: (promoId, payload) => {
     const qs = promoId ? `?promo_id=${encodeURIComponent(promoId)}` : "";
     return api(`/buy${qs}`, { method: "POST", body: payload });

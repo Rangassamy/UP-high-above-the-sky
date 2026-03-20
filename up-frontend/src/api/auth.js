@@ -1,3 +1,8 @@
+/*
+ * Appels API lies a l'authentification.
+ * Les stores s'appuient sur ce module pour se connecter, s'inscrire et se deconnecter.
+ */
+
 import { api, setToken, clearToken } from "./http";
 
 export const AuthAPI = {

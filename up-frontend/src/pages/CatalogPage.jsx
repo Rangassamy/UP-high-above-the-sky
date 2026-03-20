@@ -1,3 +1,8 @@
+/*
+ * Catalogue principal.
+ * Cette page regroupe la recherche, les filtres et les actions d'ajout au panier.
+ */
+
 import { useMemo, useState } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import SectionTitle from "../components/SectionTitle";

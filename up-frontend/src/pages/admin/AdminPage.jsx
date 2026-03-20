@@ -1,3 +1,8 @@
+/*
+ * Coquille de l'administration.
+ * Elle controle l'acces puis affiche les sections Produits, Commandes et Promos.
+ */
+
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import SectionTitle from "../../components/SectionTitle";
 import EmptyState from "../../components/EmptyState";

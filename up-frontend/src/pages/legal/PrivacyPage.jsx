@@ -1,3 +1,5 @@
+/* Page de confidentialite qui explique les donnees stockees localement. */
+
 import SectionTitle from "../../components/SectionTitle";
 
 export default function PrivacyPage(){

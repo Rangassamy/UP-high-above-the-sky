@@ -1,3 +1,8 @@
+/*
+ * Store du panier.
+ * Les lignes du panier sont sauvegardees cote backend, puis synchronisees ici.
+ */
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { CartAPI } from "../api/cart";
@@ -6,7 +11,8 @@ import { getToken } from "../api/http";
 export const useCartStore = create(
   persist(
     (set, get) => ({
-      items: [], // { productId, qty }
+      // Format interne du frontend : { productId, qty }
+      items: [],
       promoCode: "",
       loading: false,
       error: "",
@@ -45,6 +51,7 @@ export const useCartStore = create(
           const list = Array.isArray(raw)
             ? raw
             : raw?.content || raw?.items || raw?.cart || [];
+          // Normalisation des cles pour garder un format stable dans le store.
           const items = list
             .map((it) => ({
               productId: String(

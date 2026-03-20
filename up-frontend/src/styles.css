@@ -1,13 +1,16 @@
-/* UP — UI classique, design nuageux */
+/*
+ * Feuille de style globale du frontend.
+ * Elle pose la palette, les composants generiques et le systeme de mise en page.
+ */
 
 :root {
-  /* Base palette */
+  /* Palette generale du site. */
   --bg1: #eef2ff;
   --bg2: #f8fafc;
   --text: #0f172a;
   --muted: #64748b;
 
-  /* Liquid glass tokens */
+  /* Variables partagees pour l'effet glassmorphism. */
   --glass: rgba(255, 255, 255, 0.14);
   --glass-strong: rgba(255, 255, 255, 0.22);
   --glass-border: rgba(255, 255, 255, 0.28);
@@ -17,7 +20,7 @@
   --glass-shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.1);
   --glass-blur: 18px;
 
-  /* Accents */
+  /* Couleurs d'action. */
   --primary: #111827;
   --primaryText: #ffffff;
   --ring: rgba(99, 102, 241, 0.35);
@@ -81,7 +84,7 @@ select {
   inset: 0;
   pointer-events: none;
   border-radius: inherit;
-  /* subtle top highlight */
+  /* Reflet lumineux sur la partie haute des cartes. */
   background: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.35),
@@ -95,7 +98,7 @@ select {
   inset: 0;
   pointer-events: none;
   border-radius: inherit;
-  /* inner rim */
+  /* Liseres internes pour mieux detacher les surfaces. */
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.45),
     inset 0 -1px 0 rgba(15, 23, 42, 0.06);
@@ -156,6 +159,8 @@ select {
     box-shadow 0.12s ease,
     background 0.12s ease;
 }
+
+/* Variantes de boutons utilisees dans tout le site. */
 .btn:hover {
   border-color: var(--glass-border-strong);
   box-shadow: 0 14px 36px rgba(15, 23, 42, 0.14);
@@ -224,6 +229,8 @@ select {
   -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 6px)) saturate(160%);
   color: var(--text);
 }
+
+/* Elements d'interface repetes sur plusieurs pages. */
 .input:focus,
 textarea:focus,
 select:focus {

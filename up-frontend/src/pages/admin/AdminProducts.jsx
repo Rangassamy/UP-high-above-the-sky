@@ -1,4 +1,10 @@
+/*
+ * Ecran d'administration des produits.
+ * Il permet de creer, modifier, mettre en avant et supprimer des produits.
+ */
+
 import { useEffect, useMemo, useState } from "react";
+import { DEFAULT_PRODUCT_IMAGE_PATH, resolveImageUrl } from "../../lib/images";
 import { useProductStore } from "../../stores/productStore";
 import { makeSlug } from "../../lib/slug";
 
@@ -9,7 +15,7 @@ const blank = {
   category: "caps",
   price: 39,
   description: "",
-  images: ["/image.png"],
+  images: [DEFAULT_PRODUCT_IMAGE_PATH],
   stockQty: 0,
   featured: false,
 };
@@ -19,14 +25,19 @@ export default function AdminProducts() {
   const fetchProducts = useProductStore((s) => s.fetchProducts);
   const saveProduct = useProductStore((s) => s.saveProduct);
   const deleteProduct = useProductStore((s) => s.deleteProduct);
+  const uploadProductImage = useProductStore((s) => s.uploadProductImage);
+  const loading = useProductStore((s) => s.loading);
+  const error = useProductStore((s) => s.error);
 
   const [editing, setEditing] = useState(blank);
+  const [uploadMessage, setUploadMessage] = useState("");
 
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
   const ordered = useMemo(() => {
+    // Les produits en vedette apparaissent d'abord dans le tableau admin.
     const p = [...products];
     p.sort((a, b) => Number(b.featured) - Number(a.featured));
     return p;
@@ -116,6 +127,7 @@ export default function AdminProducts() {
             </button>
             <button
               className="btn primary"
+              disabled={loading}
               onClick={async () => {
                 const next = { ...editing };
                 if (!next.slug) next.slug = makeSlug(next.name);
@@ -123,10 +135,11 @@ export default function AdminProducts() {
                   String(next.images?.[0] || "").trim() || blank.images[0],
                 ];
                 await saveProduct(next);
+                setUploadMessage("");
                 setEditing(blank);
               }}
             >
-              Enregistrer
+              {loading ? "Enregistrement..." : "Enregistrer"}
             </button>
           </div>
 
@@ -190,14 +203,50 @@ export default function AdminProducts() {
           </div>
 
           <div>
-            <label>Image URL</label>
+            <label>Image PNG</label>
             <input
               className="input"
-              value={editing.images?.[0] || ""}
-              onChange={(e) =>
-                setEditing({ ...editing, images: [e.target.value] })
-              }
+              type="file"
+              accept="image/png"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+
+                setUploadMessage("");
+                const result = await uploadProductImage(file);
+                if (result.ok && result.path) {
+                  setEditing((current) => ({ ...current, images: [result.path] }));
+                  setUploadMessage("Image importee dans le projet.");
+                }
+
+                e.target.value = "";
+              }}
             />
+            <div className="small">
+              Selectionne un fichier PNG depuis l'ordinateur pour le stocker dans
+              le projet.
+            </div>
+          </div>
+
+          <div className="glass card">
+            <div style={{ fontWeight: 900 }}>Apercu image</div>
+            <img
+              src={resolveImageUrl(editing.images?.[0])}
+              alt={editing.name || "Apercu produit"}
+              style={{
+                width: "100%",
+                height: 180,
+                objectFit: "cover",
+                borderRadius: 14,
+                border: "1px solid var(--glass-border)",
+                marginTop: 10,
+              }}
+            />
+            <div className="small" style={{ marginTop: 8 }}>
+              Chemin enregistre : {editing.images?.[0] || DEFAULT_PRODUCT_IMAGE_PATH}
+            </div>
+            {uploadMessage ? <div className="small">{uploadMessage}</div> : null}
+            {error ? <div className="small" style={{ color: "#991b1b" }}>{error}</div> : null}
           </div>
 
           <div className="row wrap" style={{ alignItems: "center" }}>

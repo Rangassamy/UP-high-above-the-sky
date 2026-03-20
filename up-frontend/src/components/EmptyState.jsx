@@ -1,3 +1,5 @@
+/* Bloc reutilisable pour afficher un etat vide ou un acces bloque. */
+
 export default function EmptyState({ title, text, action }) {
   return (
     <div className="glass card">

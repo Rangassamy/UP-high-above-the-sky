@@ -1,3 +1,5 @@
+/* Page affichee lorsqu'aucune route ne correspond a l'URL demandee. */
+
 import { Link } from "react-router-dom";
 
 export default function NotFoundPage() {

@@ -1,3 +1,5 @@
+/* API de verification et de gestion des codes promo. */
+
 import { api } from "./http";
 
 const DEFAULT_VALIDATE = "/code/check";

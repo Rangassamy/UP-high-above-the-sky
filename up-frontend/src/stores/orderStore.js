@@ -1,8 +1,15 @@
+/*
+ * Store des commandes.
+ * Il sert a la fois pour l'espace client et pour la vue d'administration.
+ */
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { OrdersAPI } from "../api/orders";
 
 function mapOrder(o) {
+  // Le backend renvoie les commandes avec des noms de champs proches du SQL.
+  // Cette fonction les transforme en format simple pour les composants React.
   if (!o) return null;
   return {
     id: String(o.id ?? ""),

@@ -1,3 +1,5 @@
+/* Page de mentions legales adaptee a une presentation scolaire. */
+
 import SectionTitle from "../../components/SectionTitle";
 
 export default function MentionsPage(){

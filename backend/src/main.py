@@ -1,7 +1,15 @@
+"""Point d'entree FastAPI du backend UP.
+
+Ce module assemble l'application, declare le CORS pour le frontend Vite et
+enregistre toutes les routes exposees par l'API.
+"""
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from src.core.database import init_db
+from src.core.database.db import UPLOADS_DIR
 from .routes import register
 from .routes import login
 from .routes import product
@@ -32,10 +40,12 @@ app.include_router(cart.router)
 app.include_router(order.router)
 app.include_router(buy.router)
 app.include_router(contact.router)
+app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
 init_db.init()
 
 
 @app.get("/")
 def read_root():
+    """Route minimale utile pour verifier que l'API repond."""
     return {"Hello": "World"}

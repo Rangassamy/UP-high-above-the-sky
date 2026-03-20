@@ -1,3 +1,5 @@
+"""Route de consultation du profil courant."""
+
 from typing import Annotated
 from fastapi import APIRouter, Cookie, Header
 
@@ -12,6 +14,7 @@ async def get_profile(
     access_token: Annotated[str | None, Cookie()] = None,
     authorization: Annotated[str | None, Header()] = None,
 ):
+    """Retourne le profil du compte connecte sans renvoyer son mot de passe."""
     user: User = await get_current_user(access_token or authorization)
     user.password = ""
     return user

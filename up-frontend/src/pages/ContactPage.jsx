@@ -1,3 +1,8 @@
+/*
+ * Page de contact.
+ * Le formulaire envoie son contenu au backend pour confirmer la reception.
+ */
+
 import { useState } from "react";
 import SectionTitle from "../components/SectionTitle";
 import { ContactAPI } from "../api/contact";

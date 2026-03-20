@@ -1,3 +1,5 @@
+/* En-tete reutilisable avec titre, sous-titre et action a droite. */
+
 export default function SectionTitle({ title, subtitle, right }) {
   return (
     <div className="row wrap" style={{ justifyContent: "space-between", alignItems: "baseline" }}>

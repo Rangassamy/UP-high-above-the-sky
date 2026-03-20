@@ -1,3 +1,8 @@
+/*
+ * Page de connexion et d'inscription.
+ * Un seul ecran permet de basculer entre les deux formulaires.
+ */
+
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import SectionTitle from "../components/SectionTitle";

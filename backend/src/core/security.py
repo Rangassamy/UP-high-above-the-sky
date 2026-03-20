@@ -1,3 +1,9 @@
+"""Gestion simple des jetons JWT et des controles d'acces.
+
+Le projet utilise un jeton signe pour authentifier l'utilisateur connecte.
+Le meme jeton peut etre transmis par cookie HTTPOnly ou par en-tete Bearer.
+"""
+
 from fastapi import HTTPException, status
 from datetime import datetime, timedelta, timezone
 import jwt
@@ -8,6 +14,8 @@ from src.models.user import Role, User
 
 
 class TokenResponse(BaseModel):
+    """Format renvoye par les routes de connexion et d'inscription."""
+
     access_token: str
     token_type: str
 
@@ -17,6 +25,7 @@ ALGORITHM = "HS256"
 
 
 def create_token(data: dict, expires_delta: timedelta | None = None):
+    """Cree un JWT a partir des donnees d'un utilisateur."""
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
@@ -28,6 +37,7 @@ def create_token(data: dict, expires_delta: timedelta | None = None):
 
 
 def normalize_token(token: str | None) -> str | None:
+    """Supprime le prefixe 'Bearer ' lorsqu'il est present."""
     if not token:
         return None
     if token.lower().startswith("bearer "):
@@ -36,6 +46,7 @@ def normalize_token(token: str | None) -> str | None:
 
 
 async def get_current_user(token: str | None) -> User:
+    """Decode le jeton puis recupere l'utilisateur associe en base."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -59,6 +70,7 @@ async def get_current_user(token: str | None) -> User:
 
 
 async def is_admin(user: User):
+    """Refuse l'acces si l'utilisateur connecte n'est pas administrateur."""
     if user.role.name == Role.ADMIN.name:
         return
     raise HTTPException(

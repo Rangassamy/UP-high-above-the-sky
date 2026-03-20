@@ -1,3 +1,5 @@
+"""Operations SQLite liees aux commandes."""
+
 from datetime import datetime
 from typing import List, Optional
 import json
@@ -7,6 +9,7 @@ from src.core.utils import generate_order_id
 
 
 def create_table():
+    """Cree la table des commandes et ajoute les colonnes manquantes si besoin."""
     cur = connection.cursor()
     cur.execute("""
         CREATE TABLE IF NOT EXISTS orders (
@@ -27,7 +30,8 @@ def create_table():
     """)
     connection.commit()
 
-    # Backward-compat: add missing columns if table already existed
+    # Si une ancienne version de la table existe deja, on lui ajoute les
+    # colonnes apparues plus tard pour conserver les donnees.
     cur.execute("PRAGMA table_info(orders);")
     existing = {row[1] for row in cur.fetchall()}
     columns = {
@@ -46,6 +50,7 @@ def create_table():
 
 
 def create(order: Order):
+    """Insere une nouvelle commande et lui attribue un identifiant lisible."""
     cur = connection.cursor()
     id = generate_order_id()
     order.id = id
@@ -74,6 +79,7 @@ def create(order: Order):
 
 
 def get(id: str) -> Optional[Order]:
+    """Recupere une commande par son identifiant public."""
     cur = connection.cursor()
     cur.execute("SELECT * FROM orders WHERE id = ?;", (id,))
     row = cur.fetchone()
@@ -96,6 +102,7 @@ def get(id: str) -> Optional[Order]:
 
 
 def get_all() -> List[Order]:
+    """Retourne toutes les commandes, utile pour l'administration."""
     cur = connection.cursor()
     cur.execute("SELECT * FROM orders;")
     rows = cur.fetchall()
@@ -119,6 +126,7 @@ def get_all() -> List[Order]:
 
 
 def get_all_by_user_id(user_id) -> List[Order]:
+    """Retourne les commandes appartenant a un utilisateur."""
     cur = connection.cursor()
     cur.execute("SELECT * FROM orders WHERE user_id = ?;", (user_id,))
     rows = cur.fetchall()
@@ -142,6 +150,7 @@ def get_all_by_user_id(user_id) -> List[Order]:
 
 
 def update(order: Order):
+    """Met a jour une commande existante, notamment son statut."""
     cur = connection.cursor()
     cur.execute(
         """
@@ -167,6 +176,7 @@ def update(order: Order):
 
 
 def delete(id: str):
+    """Supprime une commande a partir de son identifiant."""
     cur = connection.cursor()
     cur.execute("DELETE FROM orders WHERE id = ?;", (id,))
     connection.commit()

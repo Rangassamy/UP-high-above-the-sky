@@ -1,8 +1,11 @@
+/* Carte produit standard utilisee dans le catalogue et les categories. */
+
 import { Link } from "react-router-dom";
+import { resolveImageUrl } from "../lib/images";
 import { eur } from "../lib/money";
 
 export default function ProductCard({ product, actions }) {
-  const image = product.images?.[0] || "/image.png";
+  const image = resolveImageUrl(product.images?.[0]);
 
   return (
     <div className="glass card product-card">

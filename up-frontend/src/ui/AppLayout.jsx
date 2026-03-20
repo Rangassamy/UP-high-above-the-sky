@@ -1,3 +1,9 @@
+/*
+ * Layout principal partage par toutes les pages.
+ * Il charge les produits, le profil utilisateur et le panier, puis affiche
+ * la navigation globale et le pied de page.
+ */
+
 import { useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useCartStore } from "../stores/cartStore";
@@ -18,14 +24,17 @@ export default function AppLayout() {
   const fetchMe = useAuthStore((s) => s.fetchMe);
 
   useEffect(() => {
+    // Le catalogue est charge des l'arrivee sur le site pour alimenter toutes les pages.
     fetchProducts();
   }, [fetchProducts]);
 
   useEffect(() => {
+    // Si un token existe deja, on tente de reconstituer la session utilisateur.
     fetchMe();
   }, [token, fetchMe]);
 
   useEffect(() => {
+    // Le panier est conserve cote serveur ; on le recharge apres identification.
     if (user) syncFromServer();
   }, [user, token, syncFromServer]);
 
@@ -136,6 +145,7 @@ export default function AppLayout() {
 }
 
 function SearchMini() {
+  /* Barre de recherche compacte placee dans la navigation. */
   const navigate = useNavigate();
   return (
     <form

@@ -1,3 +1,5 @@
+/* Creation d'un slug lisible a partir d'un nom de produit. */
+
 export function makeSlug(input) {
   return String(input || "")
     .toLowerCase()

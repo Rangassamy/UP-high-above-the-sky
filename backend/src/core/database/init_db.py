@@ -1,7 +1,16 @@
+"""Creation des tables et injection des donnees de demonstration."""
+
+import shutil
+
+from src.core.database.db import STORAGE_DIR, UPLOADS_DIR
 from src.core.database.crud import carts, orders, products, promo_codes, users
 from src.models.product import Product
 from src.models.promo_code import PromoCode
 from src.models.user import Role
+
+DEMO_UPLOADS_DIR = UPLOADS_DIR / "demo"
+DEMO_IMAGE_SOURCE = STORAGE_DIR.parent / "up-frontend" / "public" / "image.png"
+DEFAULT_PRODUCT_IMAGE = "/uploads/demo/default-product.png"
 
 
 DEMO_PRODUCTS = [
@@ -12,7 +21,7 @@ DEMO_PRODUCTS = [
         "caps",
         39,
         "Casquette blanche a visiere courbe, broderie UP ton sur ton et coton epais pour un usage quotidien.",
-        "https://via.placeholder.com/1200x800/F4F1EA/1E293B?text=UP+White+Cloud",
+        "/uploads/demo/casquette-white-cloud.png",
         25,
         True,
     ),
@@ -23,7 +32,7 @@ DEMO_PRODUCTS = [
         "caps",
         39,
         "Version gris orage avec fermeture ajustable et interieur renforce pour garder une belle tenue.",
-        "https://via.placeholder.com/1200x800/E5E7EB/1F2937?text=UP+Storm+Grey",
+        "/uploads/demo/casquette-storm-grey.png",
         12,
         False,
     ),
@@ -34,7 +43,7 @@ DEMO_PRODUCTS = [
         "caps",
         42,
         "Modele beige sable avec surpiqures orange et finition plus sport, pense pour les sorties en ville.",
-        "https://via.placeholder.com/1200x800/FDE7C7/7C2D12?text=UP+Sunset+Line",
+        "/uploads/demo/casquette-sunset-line.png",
         9,
         False,
     ),
@@ -45,7 +54,7 @@ DEMO_PRODUCTS = [
         "vetements",
         79,
         "Hoodie coupe droite, interieur molletonne et logo poitrine discret. Piece phare de la collection.",
-        "https://via.placeholder.com/1200x800/DBEAFE/1D4ED8?text=UP+Hoodie+Cloud",
+        "/uploads/demo/hoodie-cloud.png",
         8,
         False,
     ),
@@ -56,7 +65,7 @@ DEMO_PRODUCTS = [
         "vetements",
         69,
         "Sweat col rond bleu nuit, confortable et facile a porter avec un jean ou un pantalon cargo.",
-        "https://via.placeholder.com/1200x800/DBEAFE/172554?text=UP+Altitude+Crew",
+        "/uploads/demo/sweat-altitude-crew.png",
         14,
         False,
     ),
@@ -67,7 +76,7 @@ DEMO_PRODUCTS = [
         "vetements",
         19,
         "Lot de trois paires en coton souple, logo tisse et maintien elastique simple pour tous les jours.",
-        "https://via.placeholder.com/1200x800/F8FAFC/334155?text=UP+Contrail+Pack",
+        "/uploads/demo/chaussettes-contrail-pack.png",
         30,
         False,
     ),
@@ -80,6 +89,7 @@ DEMO_PROMOS = [
 
 
 def seed_admin():
+    """Cree ou remet a niveau le compte administrateur de demonstration."""
     admin = users.get_user_by_name("admin@up.local")
     if admin:
         if admin.role != Role.ADMIN:
@@ -92,18 +102,55 @@ def seed_admin():
     users.update_user(admin)
 
 
+def prepare_demo_images():
+    """Cree les images locales de demonstration a partir de l'image du projet."""
+    DEMO_UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+    if not DEMO_IMAGE_SOURCE.exists():
+        return
+
+    targets = {DEFAULT_PRODUCT_IMAGE.removeprefix("/uploads/demo/")}
+    targets.update(f"{product.slug}.png" for product in DEMO_PRODUCTS)
+
+    for filename in targets:
+        target = DEMO_UPLOADS_DIR / filename
+        if not target.exists():
+            shutil.copyfile(DEMO_IMAGE_SOURCE, target)
+
+
+def migrate_remote_product_images():
+    """Remplace les anciennes URL distantes par des images locales du projet."""
+    placeholder = DEMO_UPLOADS_DIR / "default-product.png"
+    if not placeholder.exists():
+        return
+
+    product_uploads_dir = UPLOADS_DIR / "products"
+    product_uploads_dir.mkdir(parents=True, exist_ok=True)
+
+    for product in products.get_all():
+        image = str(product.image or "").strip().lower()
+        if not image.startswith(("http://", "https://")):
+            continue
+
+        filename = f"{product.slug or 'product'}-local.png"
+        target = product_uploads_dir / filename
+        if not target.exists():
+            shutil.copyfile(placeholder, target)
+
+        product.image = f"/uploads/products/{filename}"
+        products.update(product)
+
+
 def seed_products():
-    existing_by_slug = {product.slug: product for product in products.get_all()}
+    """Ajoute les produits de demonstration uniquement lors de la premiere initialisation."""
+    if products.get_all():
+        return
+
     for product in DEMO_PRODUCTS:
-        existing = existing_by_slug.get(product.slug)
-        if existing:
-            product.id = existing.id
-            products.update(product)
-        else:
-            products.create(product)
+        products.create(product)
 
 
 def seed_promos():
+    """Ajoute les codes promo de demonstration ou met a jour leur version existante."""
     for promo_code in DEMO_PROMOS:
         existing = promo_codes.get_by_code(promo_code.code)
         if existing:
@@ -114,12 +161,15 @@ def seed_promos():
 
 
 def init():
+    """Prepare toute la base SQLite au demarrage de l'application."""
     users.create_table()
     products.create_table()
     promo_codes.create_table()
     carts.create_table()
     orders.create_table()
+    prepare_demo_images()
     seed_admin()
     seed_products()
+    migrate_remote_product_images()
     seed_promos()
     print("Created all databases")

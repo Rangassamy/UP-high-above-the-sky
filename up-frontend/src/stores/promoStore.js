@@ -1,3 +1,8 @@
+/*
+ * Store des codes promotionnels.
+ * Il gere la validation cote client et l'edition cote administration.
+ */
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { PromosAPI } from "../api/promos";
@@ -9,7 +14,7 @@ function mapPromo(p) {
     code: String(p.code ?? "").toUpperCase(),
     type: p.type,
     value: Number(p.value ?? 0),
-    // backend: enable (pas active)
+    // Le backend utilise la cle "enable" alors que le frontend manipule "active".
     active: Boolean(p.enable ?? p.active ?? false),
   };
 }
@@ -45,7 +50,7 @@ export const usePromoStore = create(
         }
       },
 
-      // Admin: charger depuis backend
+      // Recharge les codes promo reels pour la partie administration.
       async fetchPromos() {
         set({ loading: true, error: "" });
         try {

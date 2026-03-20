@@ -1,5 +1,11 @@
+/*
+ * Store du catalogue.
+ * Il charge les produits depuis l'API et fournit aussi les actions admin.
+ */
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { DEFAULT_PRODUCT_IMAGE_PATH } from "../lib/images";
 import { makeSlug } from "../lib/slug";
 import { ProductsAPI } from "../api/products";
 
@@ -19,6 +25,7 @@ export const useProductStore = create(
             ? raw
             : raw?.content || raw?.items || [];
 
+          // Normalisation du backend vers le format attendu par le frontend.
           const mapped = list.map((p) => ({
             id: String(p.id ?? p.product_id ?? p._id ?? ""),
             name: p.name ?? p.title ?? "",
@@ -30,7 +37,7 @@ export const useProductStore = create(
               ? p.images
               : p.image
                 ? [p.image]
-                : [],
+                : [DEFAULT_PRODUCT_IMAGE_PATH],
             stockQty: Number(p.stockQty ?? p.stock_quantity ?? p.stock ?? 0),
             featured: Boolean(p.featured ?? p.is_featured ?? false),
             active: p.active ?? p.is_active ?? true,
@@ -53,7 +60,8 @@ export const useProductStore = create(
             category: product.category,
             price: Number(product.price || 0),
             description: product.description || "",
-            image: String(product.images?.[0] || "").trim(),
+            image:
+              String(product.images?.[0] || "").trim() || DEFAULT_PRODUCT_IMAGE_PATH,
             stock_quantity: Number(product.stockQty || 0),
             featured: Boolean(product.featured),
           };
@@ -86,6 +94,18 @@ export const useProductStore = create(
         }
       },
 
+      async uploadProductImage(file) {
+        set({ loading: true, error: "" });
+        try {
+          const data = await ProductsAPI.uploadImage(file);
+          set({ loading: false });
+          return { ok: true, path: data?.path || "" };
+        } catch (e) {
+          set({ loading: false, error: e.message || "Erreur image" });
+          return { ok: false, error: e.message };
+        }
+      },
+
       listPublic() {
         return get().products.filter((p) => p.active !== false);
       },
@@ -106,6 +126,7 @@ export const useProductStore = create(
       },
 
       upsert(product) {
+        // Methode locale pratique pour inserer ou remplacer un produit en memoire.
         set((state) => {
           const incoming = { ...product };
           if (!incoming.slug) incoming.slug = makeSlug(incoming.name);

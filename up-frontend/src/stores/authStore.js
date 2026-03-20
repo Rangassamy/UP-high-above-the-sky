@@ -1,3 +1,8 @@
+/*
+ * Store d'authentification.
+ * Il conserve le token, le profil utilisateur et les actions de connexion.
+ */
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { clearToken, getToken } from "../api/http";
@@ -16,7 +21,7 @@ export const useAuthStore = create(
           set({ loading: true, error: "" });
           const data = await AuthAPI.login({ username, password });
           set({ token: data?.access_token || get().token || null });
-          // Try to load full profile if backend supports /me
+          // Le store charge ensuite le profil complet pour connaitre le role.
           await get().fetchMe();
           if (!get().user) set({ user: { username } });
           set({ loading: false });
@@ -45,6 +50,7 @@ export const useAuthStore = create(
       async fetchMe() {
         try {
           const me = await AuthAPI.me();
+          // Les routes du backend peuvent renvoyer des formats legerement differents.
           const user = me?.user || me?.content || me;
           if (user) set({ user });
           return { ok: true, user };

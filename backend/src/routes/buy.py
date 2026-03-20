@@ -1,3 +1,5 @@
+"""Route de validation de commande a partir du panier serveur."""
+
 from datetime import datetime
 from typing import Annotated, Optional
 
@@ -16,6 +18,8 @@ router = APIRouter()
 
 
 class BuyPayload(BaseModel):
+    """Informations de livraison saisies au moment du paiement."""
+
     name: Optional[str] = None
     email: Optional[str] = None
     address1: Optional[str] = None
@@ -30,6 +34,7 @@ async def buy(
     promo_id: Optional[str] = None,
     payload: BuyPayload = Body(default=BuyPayload()),
 ):
+    """Transforme le panier courant en commande puis vide le panier."""
     user: User = await get_current_user(access_token or authorization)
     cart = db_carts.get_by_user(user.id)
     total_price = 0.0
@@ -52,6 +57,7 @@ async def buy(
             }
         )
     if promo_id:
+        # Le code promo est applique uniquement s'il existe et s'il est actif.
         promo = db_promo.get(promo_id)
         if not promo or not promo.enable:
             raise HTTPException(HTTP_404_NOT_FOUND, "Invalid promo code")

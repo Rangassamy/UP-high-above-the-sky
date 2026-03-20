@@ -1,5 +1,11 @@
+/*
+ * Page d'accueil.
+ * Elle met en avant un produit et propose des raccourcis vers les categories.
+ */
+
 import { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { resolveImageUrl } from "../lib/images";
 import SectionTitle from "../components/SectionTitle";
 import { useProductStore } from "../stores/productStore";
 import { useCartStore } from "../stores/cartStore";
@@ -11,6 +17,7 @@ export default function HomePage() {
   const add = useCartStore((s) => s.add);
 
   const featured = useMemo(() => {
+    // Le produit en vedette est choisi a partir du catalogue charge en memoire.
     const pub = productsAll.filter((p) => p.active);
     return pub.find((p) => p.featured) || pub[0] || null;
   }, [productsAll]);
@@ -79,7 +86,7 @@ export default function HomePage() {
 
           <div style={{ width: 460, maxWidth: "100%" }}>
             <img
-              src={featured?.images?.[0] || "/image.png"}
+              src={resolveImageUrl(featured?.images?.[0])}
               alt={featured?.name || "UP"}
               style={{
                 width: "100%",

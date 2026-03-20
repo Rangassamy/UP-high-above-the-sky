@@ -1,3 +1,8 @@
+/*
+ * Page de categorie.
+ * Elle filtre le catalogue en fonction du segment d'URL courant.
+ */
+
 import { useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import SectionTitle from "../components/SectionTitle";

@@ -1,3 +1,5 @@
+"""Connexion SQLite centrale utilisee par les modules CRUD."""
+
 import sqlite3
 from pathlib import Path
 
@@ -8,5 +10,7 @@ else:
     STORAGE_DIR = BASE_DIR / "storage"
 
 STORAGE_DIR.mkdir(parents=True, exist_ok=True)
+UPLOADS_DIR = STORAGE_DIR / "uploads"
+UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
 connection = sqlite3.connect(STORAGE_DIR / "data.db", check_same_thread=False)

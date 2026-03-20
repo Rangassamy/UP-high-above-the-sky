@@ -1,3 +1,5 @@
+"""Routes de consultation et de modification du panier."""
+
 from typing import Annotated
 from src.core.database.crud import carts as crud, products
 from fastapi import APIRouter, Cookie, Header, HTTPException, status
@@ -14,6 +16,7 @@ async def get_all(
     access_token: Annotated[str | None, Cookie()] = None,
     authorization: Annotated[str | None, Header()] = None,
 ):
+    """Retourne le panier du compte connecte."""
     user: User = await get_current_user(access_token or authorization)
     carts = crud.get_all(user.id)
     return carts
@@ -26,6 +29,7 @@ async def add(
     authorization: Annotated[str | None, Header()] = None,
     quantity: int = 1,
 ):
+    """Ajoute un produit au panier ou met a jour sa quantite."""
     user: User = await get_current_user(access_token or authorization)
     if not products.get(product_id):
         raise HTTPException(
@@ -51,6 +55,7 @@ async def remove(
     access_token: Annotated[str | None, Cookie()] = None,
     authorization: Annotated[str | None, Header()] = None,
 ):
+    """Supprime un produit du panier de l'utilisateur connecte."""
     user: User = await get_current_user(access_token or authorization)
     if not crud.get_by_product(product_id, user.id):
         raise HTTPException(
@@ -65,6 +70,7 @@ async def clear(
     access_token: Annotated[str | None, Cookie()] = None,
     authorization: Annotated[str | None, Header()] = None,
 ):
+    """Vide tout le panier de l'utilisateur connecte."""
     user: User = await get_current_user(access_token or authorization)
     crud.clear_by_user(user.id)
     return {"success": True}

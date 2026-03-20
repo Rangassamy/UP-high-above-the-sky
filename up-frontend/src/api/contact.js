@@ -1,3 +1,5 @@
+/* API du formulaire de contact. */
+
 import { api } from "./http";
 
 export const ContactAPI = {

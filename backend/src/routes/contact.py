@@ -1,8 +1,12 @@
+"""Route de contact utilisee par le formulaire du frontend."""
+
 from fastapi import APIRouter
 from pydantic import BaseModel, EmailStr
 
 
 class ContactPayload(BaseModel):
+    """Contenu du message envoye depuis la page contact."""
+
     name: str
     email: EmailStr
     subject: str
@@ -14,5 +18,5 @@ router = APIRouter()
 
 @router.post("/contact")
 async def send_contact(payload: ContactPayload):
-    # For now we just acknowledge receipt; this keeps the flow fully backend-backed.
+    """Confirme la reception du message sans l'envoyer vers un service externe."""
     return {"success": True, "received": payload.model_dump()}

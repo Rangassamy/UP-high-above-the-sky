@@ -1,3 +1,8 @@
+/*
+ * Routeur principal du site.
+ * Toutes les pages publiques, legales et administratives sont declarees ici.
+ */
+
 import { createBrowserRouter } from "react-router-dom";
 import AppLayout from "./ui/AppLayout";
 

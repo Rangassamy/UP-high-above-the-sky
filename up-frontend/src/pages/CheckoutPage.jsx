@@ -1,3 +1,9 @@
+/*
+ * Page de checkout.
+ * Elle assemble les informations de livraison, le recapitulatif et la creation
+ * finale de la commande cote backend.
+ */
+
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import SectionTitle from "../components/SectionTitle";
@@ -10,6 +16,7 @@ import { eur } from "../lib/money";
 import { PromosAPI } from "../api/promos";
 
 function computeDiscount(subtotal, promo) {
+  // Le frontend calcule l'affichage de la reduction a partir du type du code promo.
   if (!promo) return 0;
   if (promo.type === "PERCENT")
     return Math.round(subtotal * (promo.value / 100));
@@ -66,6 +73,7 @@ export default function CheckoutPage() {
     let cancelled = false;
     if (!normalizedPromoCode) return () => {};
 
+    // La validite du code promo est recontrolee a chaque saisie.
     PromosAPI.validate(normalizedPromoCode)
       .then((res) => {
         if (cancelled) return;
@@ -259,7 +267,7 @@ export default function CheckoutPage() {
                   },
                 });
 
-                // Backend clears the server cart on /buy, so resync.
+                // Le backend vide le panier apres l'achat ; on recharge l'etat local.
                 await syncFromServer();
 
                 if (order?.id) {

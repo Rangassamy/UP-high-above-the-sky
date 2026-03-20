@@ -1,0 +1,42 @@
+# Prerequis et dependances du projet UP
+#
+# Frontend
+# - Node.js 22 recommande
+# - npm
+# - dependances declarees dans up-frontend/package.json :
+#   react
+#   react-dom
+#   react-router-dom
+#   zustand
+#   @eslint/js
+#   @types/react
+#   @types/react-dom
+#   @vitejs/plugin-react
+#   eslint
+#   eslint-plugin-react-hooks
+#   eslint-plugin-react-refresh
+#   globals
+#   vite
+#
+# Backend
+# - Python 3.10 recommande
+# - pip
+# - dependances Python :
+#   fastapi[standard]
+#   PyJWT
+#
+# Base de donnees
+# - SQLite utilisee via la bibliotheque standard Python
+# - fichier local : storage/data.db
+#
+# Lancement
+# - avec Docker : docker compose up --build
+# - sans Docker :
+#   1. python3 -m venv .venv
+#   2. source .venv/bin/activate
+#   3. pip install -r requirements.txt
+#   4. cd backend && fastapi run src/main.py
+#   5. dans un autre terminal : cd up-frontend && npm ci && npm run dev
+#
+# Installation Python du backend :
+-r backend/requirements.txt

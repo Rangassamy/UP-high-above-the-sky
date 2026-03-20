@@ -1,3 +1,8 @@
+/*
+ * Ecran d'administration des commandes.
+ * Il liste les commandes, affiche leur detail et permet de changer leur statut.
+ */
+
 import { useEffect, useMemo, useState } from "react";
 import { useOrderStore } from "../../stores/orderStore";
 import { eur } from "../../lib/money";
@@ -24,6 +29,7 @@ export default function AdminOrders() {
   );
 
   useEffect(() => {
+    // L'administration recharge les commandes a l'ouverture de la page.
     fetchAll();
   }, [fetchAll]);
 

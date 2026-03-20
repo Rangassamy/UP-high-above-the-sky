@@ -1,2 +1,3 @@
+# Dependances Python du backend FastAPI.
 fastapi[standard]
 PyJWT

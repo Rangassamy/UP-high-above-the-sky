@@ -1,3 +1,5 @@
+"""Routes de verification et de gestion des codes promotionnels."""
+
 from typing import Annotated
 from fastapi import APIRouter, Cookie, Header, HTTPException
 from pydantic import BaseModel
@@ -8,6 +10,8 @@ from src.models.promo_code import PromoCode
 
 
 class PromoCodeObject(BaseModel):
+    """Format de creation ou de modification d'un code promo."""
+
     code: str
     type: str
     value: int
@@ -19,6 +23,7 @@ router = APIRouter()
 
 @router.get("/code/check/{name}")
 async def check(name: str):
+    """Verifie si un code promo saisi au checkout est valable."""
     promo_code = crud.get_by_code(name)
     if promo_code and promo_code.enable:
         return {"success": True, "content": promo_code}
@@ -31,6 +36,7 @@ async def get_all(
     access_token: Annotated[str | None, Cookie()] = None,
     authorization: Annotated[str | None, Header()] = None,
 ):
+    """Liste tous les codes promo. Route reservee a l'administration."""
     user = await get_current_user(access_token or authorization)
     await is_admin(user)
 
@@ -44,6 +50,7 @@ async def create(
     access_token: Annotated[str | None, Cookie()] = None,
     authorization: Annotated[str | None, Header()] = None,
 ):
+    """Cree un code promo. Route reservee a l'administration."""
     user = await get_current_user(access_token or authorization)
     await is_admin(user)
     promo_code = PromoCode(None, object.code, object.type, object.value, object.enable)
@@ -58,6 +65,7 @@ async def edit(
     access_token: Annotated[str | None, Cookie()] = None,
     authorization: Annotated[str | None, Header()] = None,
 ):
+    """Modifie un code promo. Route reservee a l'administration."""
     user = await get_current_user(access_token or authorization)
     await is_admin(user)
     if crud.get(id) is None:
@@ -73,6 +81,7 @@ async def delete(
     access_token: Annotated[str | None, Cookie()] = None,
     authorization: Annotated[str | None, Header()] = None,
 ):
+    """Supprime un code promo. Route reservee a l'administration."""
     user = await get_current_user(access_token or authorization)
     await is_admin(user)
     promo_code = crud.get(id)

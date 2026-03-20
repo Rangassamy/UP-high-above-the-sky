@@ -1,7 +1,11 @@
+"""Modele Python d'un produit du catalogue."""
+
 from typing import Optional
 
 
 class Product:
+    """Represente un produit editable depuis l'interface d'administration."""
+
     def __init__(
         self,
         id: Optional[str],

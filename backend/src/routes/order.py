@@ -1,3 +1,5 @@
+"""Routes de lecture et de gestion des commandes."""
+
 from typing import Annotated
 from fastapi import APIRouter, Cookie, Header, HTTPException
 from pydantic import BaseModel
@@ -9,6 +11,8 @@ router = APIRouter()
 
 
 class OrderStatusPayload(BaseModel):
+    """Payload utilise par l'administration pour changer un statut."""
+
     status: str
 
 
@@ -17,6 +21,7 @@ async def get_all_user_orders(
     access_token: Annotated[str | None, Cookie()] = None,
     authorization: Annotated[str | None, Header()] = None,
 ):
+    """Retourne les commandes du compte connecte."""
     user = await get_current_user(access_token or authorization)
     orders = crud.get_all_by_user_id(user.id)
     return [o.__dict__ for o in orders]
@@ -27,6 +32,7 @@ async def get_all(
     access_token: Annotated[str | None, Cookie()] = None,
     authorization: Annotated[str | None, Header()] = None,
 ):
+    """Retourne toutes les commandes pour l'espace d'administration."""
     user = await get_current_user(access_token or authorization)
     await is_admin(user)
     orders = crud.get_all()
@@ -40,6 +46,7 @@ async def update_status(
     authorization: Annotated[str | None, Header()] = None,
     payload: OrderStatusPayload = None,
 ):
+    """Met a jour le statut d'une commande depuis l'administration."""
     user = await get_current_user(access_token or authorization)
     await is_admin(user)
     order = crud.get(order_id)

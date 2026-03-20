@@ -1,8 +1,11 @@
+"""Operations SQLite liees aux produits du catalogue."""
+
 from src.core.database.db import connection
 from src.models.product import Product
 
 
 def create_table():
+    """Cree la table des produits si elle n'existe pas."""
     cur = connection.cursor()
     cur.execute("""
         CREATE TABLE IF NOT EXISTS products (
@@ -21,6 +24,7 @@ def create_table():
 
 
 def create(product: Product):
+    """Ajoute un produit dans le catalogue."""
     cur = connection.cursor()
     cur.execute(
         """
@@ -42,6 +46,7 @@ def create(product: Product):
 
 
 def get(product_id):
+    """Recupere un produit a partir de son identifiant."""
     cur = connection.cursor()
     cur.execute(
         """
@@ -57,6 +62,7 @@ def get(product_id):
 
 
 def is_exist(product_id):
+    """Verifie rapidement si un identifiant produit existe."""
     cur = connection.cursor()
     cur.execute(
         """
@@ -69,6 +75,7 @@ def is_exist(product_id):
 
 
 def get_all() -> list[Product]:
+    """Retourne l'ensemble des produits du catalogue."""
     cur = connection.cursor()
     cur.execute("SELECT * FROM products")
     result = cur.fetchall()
@@ -79,6 +86,7 @@ def get_all() -> list[Product]:
 
 
 def update(product: Product):
+    """Met a jour toutes les informations d'un produit."""
     cur = connection.cursor()
     cur.execute(
         """
@@ -101,6 +109,7 @@ def update(product: Product):
 
 
 def delete(id):
+    """Supprime un produit du catalogue."""
     cur = connection.cursor()
     cur.execute(
         """

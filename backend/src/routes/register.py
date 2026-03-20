@@ -1,3 +1,5 @@
+"""Route d'inscription utilisateur."""
+
 from fastapi import APIRouter, HTTPException, Response
 from pydantic import BaseModel
 
@@ -7,6 +9,8 @@ from src.models.user import User
 
 
 class RegisterForm(BaseModel):
+    """Informations demandees pour creer un compte."""
+
     username: str
     email: str
     password: str
@@ -17,6 +21,7 @@ router = APIRouter()
 
 @router.post("/register")
 async def register(form: RegisterForm, response: Response):
+    """Cree le compte puis connecte immediatement l'utilisateur."""
     user = users.get_user_by_name(form.username)
     if user:
         raise HTTPException(status_code=400, detail="Username alreay exist")

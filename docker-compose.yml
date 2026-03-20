@@ -1,32 +1,39 @@
 services:
   backend:
+    # Service API FastAPI expose sur le port 8000.
     build:
       context: backend
     ports:
       - "8000:8000"
     volumes:
+      # La base SQLite est conservee a la racine du projet pour garder les donnees.
       - "./storage:/app/storage"
     develop:
       watch:
+        # Les fichiers Python sont synchronises sans reconstruire l'image.
         - action: sync
           path: ./backend
           target: /app
           ignore:
             - __pycache__/
+        # Une reconstruction est necessaire si les dependances changent.
         - action: rebuild
           path: ./backend/requirements.txt
 
   frontend:
+    # Service React/Vite expose sur le port 5173.
     build:
       context: up-frontend
     ports:
       - "5173:5173"
     develop:
       watch:
+        # Le code source du frontend est synchronise pendant le developpement.
         - action: sync
           path: ./up-frontend
           target: /app
           ignore:
             - node_modules/
+        # Une reconstruction est necessaire si package.json change.
         - action: rebuild
           path: ./up-frontend/package.json

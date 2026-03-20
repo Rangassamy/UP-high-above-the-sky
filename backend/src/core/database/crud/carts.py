@@ -1,9 +1,12 @@
+"""Operations SQLite liees au panier utilisateur."""
+
 from typing import List, Optional
 from src.core.database.db import connection
 from src.models.cart import Cart
 
 
 def create_table():
+    """Cree la table des lignes de panier si elle n'existe pas encore."""
     cur = connection.cursor()
     cur.execute("""
         CREATE TABLE IF NOT EXISTS carts (
@@ -19,6 +22,7 @@ def create_table():
 
 
 def create(cart: Cart):
+    """Ajoute une ligne de panier en base."""
     cur = connection.cursor()
     cur.execute(
         """
@@ -31,6 +35,7 @@ def create(cart: Cart):
 
 
 def get(id: int) -> Optional[Cart]:
+    """Recupere une ligne de panier a partir de son identifiant technique."""
     cur = connection.cursor()
     cur.execute("SELECT * FROM carts WHERE id = ?;", (id,))
     row = cur.fetchone()
@@ -40,6 +45,7 @@ def get(id: int) -> Optional[Cart]:
 
 
 def get_by_product(product_id: int, user_id: int) -> Optional[Cart]:
+    """Recupere la ligne d'un produit donne pour un utilisateur donne."""
     cur = connection.cursor()
     cur.execute(
         "SELECT * FROM carts WHERE product_id = ? AND user_id = ?;",
@@ -52,6 +58,7 @@ def get_by_product(product_id: int, user_id: int) -> Optional[Cart]:
 
 
 def get_all(user_id: int) -> List[Cart]:
+    """Retourne toutes les lignes de panier d'un utilisateur."""
     cur = connection.cursor()
     cur.execute("SELECT * FROM carts WHERE user_id = ?;", (user_id,))
     rows = cur.fetchall()
@@ -59,6 +66,7 @@ def get_all(user_id: int) -> List[Cart]:
 
 
 def get_by_user(user_id: str) -> List[Cart]:
+    """Alias de lecture du panier complet d'un utilisateur."""
     cur = connection.cursor()
     cur.execute("SELECT * FROM carts WHERE user_id = ?;", (user_id,))
     rows = cur.fetchall()
@@ -66,6 +74,7 @@ def get_by_user(user_id: str) -> List[Cart]:
 
 
 def update(cart: Cart):
+    """Met a jour la quantite d'un produit deja present dans le panier."""
     cur = connection.cursor()
     cur.execute(
         "UPDATE carts SET quantity = ? WHERE product_id = ? AND user_id = ?;",
@@ -75,18 +84,21 @@ def update(cart: Cart):
 
 
 def delete(id: int):
+    """Supprime une ligne de panier par identifiant technique."""
     cur = connection.cursor()
     cur.execute("DELETE FROM carts WHERE id = ?;", (id,))
     connection.commit()
 
 
 def delete_by_product(id: int, user_id: int):
+    """Supprime un produit du panier d'un utilisateur."""
     cur = connection.cursor()
     cur.execute("DELETE FROM carts WHERE product_id = ? AND user_id = ?;", (id, user_id))
     connection.commit()
 
 
 def clear_by_user(user_id: int):
+    """Vide completement le panier d'un utilisateur."""
     cur = connection.cursor()
     cur.execute("DELETE FROM carts WHERE user_id = ?;", (user_id,))
     connection.commit()

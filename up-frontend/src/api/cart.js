@@ -1,3 +1,5 @@
+/* API du panier connecte. */
+
 import { api } from "./http";
 
 export const CartAPI = {

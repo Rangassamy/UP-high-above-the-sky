@@ -1,9 +1,12 @@
+"""Operations SQLite liees aux codes promotionnels."""
+
 from typing import List, Optional
 from src.core.database.db import connection
 from src.models.promo_code import PromoCode
 
 
 def create_table():
+    """Cree la table des codes promo si elle n'existe pas."""
     cur = connection.cursor()
     cur.execute("""
         CREATE TABLE IF NOT EXISTS promo_codes (
@@ -18,6 +21,7 @@ def create_table():
 
 
 def create(promo_code: PromoCode):
+    """Ajoute un nouveau code promotionnel."""
     cur = connection.cursor()
     cur.execute(
         """
@@ -30,6 +34,7 @@ def create(promo_code: PromoCode):
 
 
 def get(id: str) -> Optional[PromoCode]:
+    """Recupere un code promo par identifiant."""
     cur = connection.cursor()
     cur.execute("SELECT * FROM promo_codes WHERE id = ?;", (id,))
     row = cur.fetchone()
@@ -41,6 +46,7 @@ def get(id: str) -> Optional[PromoCode]:
 
 
 def get_all() -> List[PromoCode]:
+    """Retourne tous les codes promo pour l'administration."""
     cur = connection.cursor()
     cur.execute("SELECT * FROM promo_codes;")
     rows = cur.fetchall()
@@ -51,6 +57,7 @@ def get_all() -> List[PromoCode]:
 
 
 def get_by_code(code: str) -> Optional[PromoCode]:
+    """Recherche un code promo a partir de son texte."""
     cur = connection.cursor()
     cur.execute("SELECT * FROM promo_codes WHERE code = ?;", (code,))
     row = cur.fetchone()
@@ -62,6 +69,7 @@ def get_by_code(code: str) -> Optional[PromoCode]:
 
 
 def update(promo_code: PromoCode):
+    """Met a jour un code promotionnel existant."""
     cur = connection.cursor()
     cur.execute(
         """
@@ -81,6 +89,7 @@ def update(promo_code: PromoCode):
 
 
 def delete(id: str):
+    """Supprime un code promo."""
     cur = connection.cursor()
     cur.execute(
         """

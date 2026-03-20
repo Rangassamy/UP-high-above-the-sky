@@ -1,5 +1,11 @@
+/*
+ * Fiche produit.
+ * Elle presente un produit unique et permet de l'ajouter au panier.
+ */
+
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { resolveImageUrl } from "../lib/images";
 import SectionTitle from "../components/SectionTitle";
 import EmptyState from "../components/EmptyState";
 import { useProductStore } from "../stores/productStore";
@@ -18,7 +24,7 @@ export default function ProductPage() {
   const product = useMemo(() => {
     return productsAll.find((p) => p.slug === slug) || null;
   }, [productsAll, slug]);
-  const image = product?.images?.[0] || "/image.png";
+  const image = resolveImageUrl(product?.images?.[0]);
 
   if (!product || !product.active) {
     return (

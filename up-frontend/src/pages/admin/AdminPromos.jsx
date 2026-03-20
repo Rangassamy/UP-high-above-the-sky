@@ -1,3 +1,8 @@
+/*
+ * Ecran d'administration des codes promo.
+ * Les promotions peuvent y etre creees, modifiees, activees ou supprimees.
+ */
+
 import { useEffect, useState } from "react";
 import { usePromoStore } from "../../stores/promoStore";
 

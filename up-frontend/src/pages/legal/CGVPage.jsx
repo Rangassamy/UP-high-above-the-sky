@@ -1,3 +1,5 @@
+/* Page de conditions generales fictives pour encadrer la demo e-commerce. */
+
 import SectionTitle from "../../components/SectionTitle";
 
 export default function CGVPage(){

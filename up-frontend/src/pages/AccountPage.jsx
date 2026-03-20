@@ -1,3 +1,8 @@
+/*
+ * Espace compte.
+ * L'utilisateur y retrouve son profil et l'historique de ses commandes.
+ */
+
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import SectionTitle from "../components/SectionTitle";
@@ -30,10 +35,12 @@ export default function AccountPage() {
   const createdOrderId = location.state?.createdOrderId;
 
   useEffect(() => {
+    // L'espace compte n'est utile que pour un utilisateur connecte.
     if (!user) navigate("/login");
   }, [user, navigate]);
 
   useEffect(() => {
+    // Les commandes sont rechargees a l'ouverture de la page.
     if (user) fetchMyOrders();
   }, [user, fetchMyOrders]);
 

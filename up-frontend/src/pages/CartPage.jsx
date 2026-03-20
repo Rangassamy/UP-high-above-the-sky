@@ -1,4 +1,10 @@
+/*
+ * Page panier.
+ * Elle affiche les lignes choisies par l'utilisateur avant le checkout.
+ */
+
 import { Link, useNavigate } from "react-router-dom";
+import { resolveImageUrl } from "../lib/images";
 import SectionTitle from "../components/SectionTitle";
 import EmptyState from "../components/EmptyState";
 import { useCartStore } from "../stores/cartStore";
@@ -16,6 +22,7 @@ export default function CartPage(){
 
   const getById = useProductStore((s) => s.getById);
 
+  // Les lignes du panier sont enrichies avec les vraies donnees produit.
   const lines = items.map(it => {
     const p = getById(it.productId);
     if (!p) return null;
@@ -46,7 +53,7 @@ export default function CartPage(){
                 <div key={l.productId} className="row wrap" style={{ alignItems:"center", justifyContent:"space-between" }}>
                   <div className="row" style={{ alignItems:"center" }}>
                     <img
-                      src={l.product.images?.[0] || "/image.png"}
+                      src={resolveImageUrl(l.product.images?.[0])}
                       alt={l.product.name}
                       style={{ width: 110, height: 78, objectFit:"cover", borderRadius: 14, border:"1px solid var(--border)" }}
                     />

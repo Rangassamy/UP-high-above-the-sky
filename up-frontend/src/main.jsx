@@ -1,3 +1,8 @@
+/*
+ * Point d'entree React de l'application.
+ * Il monte le routeur principal et charge la feuille de style globale.
+ */
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom";

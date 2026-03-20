@@ -1,8 +1,12 @@
+"""Modele Python d'une commande enregistree dans SQLite."""
+
 from datetime import datetime
 from typing import Optional
 
 
 class Order:
+    """Conserve les informations principales d'une commande client."""
+
     def __init__(
         self,
         id: Optional[str],
